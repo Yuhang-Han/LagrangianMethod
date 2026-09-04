@@ -1,0 +1,267 @@
+# 一维交错型拉氏格式
+
+20260828 hyh
+
+本目录下为交错型拉氏格式的代码.
+参考 von Neuamnn and Ritchmayer, 1949.
+
+## 方程
+
+流体力学控制方程
+$$
+\begin{aligned}
+\rho_0 \frac{\partial V}{\partial t} &=\frac{\partial U}{\partial x}, \\
+\rho_0 \frac{\partial U }{\partial t} &= -\frac{\partial }{\partial x}(p+q),\\
+\frac{\partial E}{\partial t} &=  -(p+q)\frac{\partial V}{\partial t},
+\end{aligned}
+$$
+和状态方程
+$$
+E=\frac{pV}{\gamma-1}.
+$$
+其中$x$ 为拉格朗日坐标, 即标记流体质点的初始位置. 画图时应注意, 这并不是$t$ 时刻流体质点的位置$X(x,t)$ , 其转换关系为
+$$
+\frac{\partial}{\partial t} X(x,t) = U(x, t).
+$$
+$q$ 为附加压强, 作为人工黏性项, 其表达式为
+$$
+q = -\frac{(\rho_0 c \Delta x)^2}{V}\frac{\partial V}{\partial t}\cdot \left| \frac{\partial V}{\partial t} \right|.
+$$
+将上述方程组变形后得到
+$$
+\begin{aligned}
+\rho_0 \frac{\partial U }{\partial t} &= -\frac{\partial }{\partial x}(p+q),\\
+
+\rho_0 \frac{\partial V}{\partial t} &=\frac{\partial U}{\partial x}, \\ 
+
+V\frac{\partial p}{\partial t} &=  -\big(\gamma p + (\gamma -1)q\big)\frac{\partial V}{\partial t}, \\
+
+q &= -\frac{(c \Delta x)^2}{V}
+\frac{\partial U}{\partial x} \cdot 
+\left| \frac{\partial U}{\partial x} \right|. \\
+\end{aligned}
+$$
+
+
+## 差分格式
+
+将此方程组使用交错格式离散得到
+$$
+\rho_0
+\frac{U_i^{n+1/2}-U_i^{n-1/2}}{\Delta t}
+=
+-\frac{
+p_{i+1/2}^{n}
++q_{i+1/2}^{n-1/2}
+-p_{i-1/2}^{n-1/2}
+-q_{i-1/2}^{n-1/2}
+}{\Delta x},
+$$
+
+$$
+\\[6pt]
+\rho_0
+\frac{
+V_{i+1/2}^{n+1}-V_{i+1/2}^{n}
+}{\Delta t}
+=
+\frac{
+U_{i+1}^{n+1/2}-U_i^{n+1/2}
+}{\Delta x},
+
+\\[6pt]
+q_{i+1/2}^{n+1/2}
+=
+-\frac{
+2(c\Delta x)^2
+}{
+V_{i+1/2}^{n}+V_{i+1/2}^{n+1}
+}
+\frac{
+\left(U_{i+1}^{n+1/2}-U_i^{n+1/2}\right)
+\left|
+U_{i+1}^{n+1/2}-U_i^{n+1/2}
+\right|
+}{
+(\Delta x)^2
+},
+
+\\[6pt]
+\left[
+\gamma
+\frac{
+p_{i+1/2}^{n+1}+p_{i+1/2}^{n}
+}{2}
++
+(\gamma-1)q_{i+1/2}^{n+1/2}
+\right]
+\frac{
+V_{i+1/2}^{n+1}-V_{i+1/2}^{n}
+}{\Delta t}
+\quad+
+\frac{
+V_{i+1/2}^{n+1}+V_{i+1/2}^{n}
+}{2}
+\frac{
+p_{i+1/2}^{n+1}-p_{i+1/2}^{n}
+}{\Delta t}
+=0
+$$
+
+整理后得到显式更新形式
+$$
+\begin{align}
+U_l^{n+1/2}
+&=
+U_l^{n-1/2}
+-\frac{\Delta t}{\rho_0\Delta x}
+\left(
+p_{l+1/2}^{n}
++q_{l+1/2}^{n-1/2}
+-p_{l-1/2}^{n}
+-q_{l-1/2}^{n-1/2}
+\right),
+\\[8pt]
+
+V_{l+1/2}^{n+1}
+&=
+V_{l+1/2}^{n}
++\frac{\Delta t}{\rho_0\Delta x}
+\left(
+U_{l+1}^{n+1/2}
+-U_l^{n+1/2}
+\right),
+\\[8pt]
+
+q_{l+1/2}^{n+1/2}
+&=
+-\frac{
+2c^2
+}{
+V_{l+1/2}^{n}
++V_{l+1/2}^{n+1}
+}
+\left(
+U_{l+1}^{n+1/2}
+-U_l^{n+1/2}
+\right)
+\left|
+U_{l+1}^{n+1/2}
+-U_l^{n+1/2}
+\right|,
+\\[8pt]
+
+p_{l+1/2}^{n+1}
+&=
+\frac{
+\left[
+(\gamma+1)V_{l+1/2}^{n}
+-(\gamma-1)V_{l+1/2}^{n+1}
+\right]
+p_{l+1/2}^{n}
+-
+2(\gamma-1)
+q_{l+1/2}^{n+1/2}
+\left(
+V_{l+1/2}^{n+1}
+-V_{l+1/2}^{n}
+\right)
+}{
+(\gamma+1)V_{l+1/2}^{n+1}
+-(\gamma-1)V_{l+1/2}^{n}
+}.
+\end{align}
+$$
+## 数值算例
+
+Sod 激波管, 初值
+$$
+(\rho, u, p)_L = (1,0,1),\\
+(\rho, u, p)_R = (0.125,0,0.1),
+$$
+边界使用自由流边界.
+
+由于初值需要半节点$-1/2$, 使用Taylor 二阶外插得到
+$$
+U_l^{-1/2} = -\frac{\Delta t}2 a_l^0,
+$$
+其中
+$$
+a_l^n = \frac{1}{\rho_0\Delta x}
+\left(
+p_{l+1/2}^{n}
++q_{l+1/2}^{n-1/2}
+-p_{l-1/2}^{n}
+-q_{l-1/2}^{n-1/2}
+\right),
+$$
+算下来只有在界面处非零
+$$
+U_{l*}^{-1/2} = 
+-\frac{0.45\Delta t}{\rho_0 \Delta x},
+$$
+但这么搞会导致$U$ 不单调，产生负$p$. 所以转而采用半步启动
+$$
+U_l^{1/2} = U_l^0 - \frac{\Delta t}{2 m_l}(p_{l+1/2}^0 - p_{l-1/2}^0),
+$$
+其中$m_l$ 为速度节点对应质量，对于等距网格
+$$
+m_l = \frac12 (\rho_{l-1/2}^0 + \rho_{l+1/2}^0)\Delta x.
+$$
+
+
+初始速度均为0, 所以初始人工黏性
+$$
+q^{-1/2} = 0.
+$$
+
+
+## 程序实现
+
+1. 网格参数: 输入时空网格剖分数$M, N$, 空间终点$X$, 时间终点$T$. 则时间网格步长$\tau = 1/M$, 空间网格步长$h=1/N$.
+2. 初始化: 定义数组 pn, qn, Un, Vn, 分别用于存储$p_{l-1/2}^n, q^{n-1/2}_{l-1/2}, U^{n-1/2}_l, V^n_{l-1/2}$ 的值; p, q, U, V 用于存储下一时刻的值. 将初值条件填入pn, qn, Un, Vn. 另外定义数组xEuler 用于存储质点位置。$n=0$.
+3. 时间推进: 使用显式差分格式分四段推进时间. 并更新质点位置xEuler。
+4. 边界处理: 应用边界条件.
+5. 时间更新: $n \leftarrow n+1$, 回到3, 迭代M 次.
+
+
+
+另, GPT提醒应当注意单元质量, 因为密度的单元长度都在变, 而质量守恒.
+
+为了最后画图， 中间还需要更新质点的空间位置X，单元量使用单元均值画图。
+
+### 数值结果
+
+时间终点$T=0.1$，空间终点$X=1$. $M=N=1000$, 得到的结果如下图
+
+![density](figures/density.png)
+
+![Velocity](figures/velocity.png)
+
+![Pressure](figures/pressure.png)
+
+以密度为例，使用正弦初值，采用投影到粗网格的方法测试自收敛阶, 固空间剖分$M=2000$, 参考网格的空间剖分$N_{ref} = 1280$.
+
+| $N$  | $L^1$ error           | Order | $L^2$ error           | Order | $L^\infty$ error      | Order |
+| ---- | --------------------- | ----- | --------------------- | ----- | --------------------- | ----- |
+| 20   | $4.4551\times10^{-3}$ | —     | $5.5416\times10^{-3}$ | —     | $1.3123\times10^{-2}$ | —     |
+| 40   | $1.2050\times10^{-3}$ | 1.886 | $1.5377\times10^{-3}$ | 1.850 | $4.2198\times10^{-3}$ | 1.637 |
+| 80   | $3.0590\times10^{-4}$ | 1.978 | $3.9598\times10^{-4}$ | 1.957 | $1.1309\times10^{-3}$ | 1.900 |
+| 160  | $7.6064\times10^{-5}$ | 2.008 | $9.8628\times10^{-5}$ | 2.005 | $2.8263\times10^{-4}$ | 2.000 |
+| 320  | $1.8191\times10^{-5}$ | 2.064 | $2.3564\times10^{-5}$ | 2.065 | $6.7750\times10^{-5}$ | 2.061 |
+
+三种范数的空间收敛阶都趋近于 **2 阶**。
+
+
+
+### q=0 的探究
+
+进一步我还探究了$q=0$ 即无人工黏性的情况, 与前图采用相同的条件, 结果如下
+
+![densityq0](figures/density_q0.png)
+
+![velocityq0](figures/velocity_q0.png)
+
+![pressureq0](figures/pressure_q0.png)
+
+可以看到, 尽管没有出现负压强, 但是震荡十分剧烈.
