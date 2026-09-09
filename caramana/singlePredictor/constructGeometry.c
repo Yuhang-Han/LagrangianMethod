@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 #include <math.h>
 
@@ -20,6 +21,7 @@ typedef struct {
 typedef struct {
     // topology info
     size_t *center;
+    size_t *num_corners;
     size_t (*corners)[4];
     // physical info
     double *mass;
@@ -27,7 +29,16 @@ typedef struct {
 } DualGrid;
 
 typedef struct {
-	size_t *vertices;
+	// 4 vertices but different origin
+	/* 		cell vertex		edge midpoint
+					*--------*
+					/		/
+				   *--------*
+		edge midpoint		cell center
+	*/
+	size_t *cellvertex;
+	size_t *cellcenter;
+	size_t (*edgemids)[2];
 	
     double *mass;
     double *pressure;
@@ -41,49 +52,60 @@ typedef struct {
 } Edges;
 
 typedef struct {
-    size_t *id;
+	size_t *num_neighbor_corners;
 	size_t (*neighbor_corners)[4];
 } Nodes;
+// just for construct dualgrid
 
 int main()
 {
 	const size_t N = 240;
 
-	double (*coor)[2] = malloc(4*N * sizeof(*coor));
-	double (*coor_mid)[2] = malloc(4*N * sizeof(*coor_mid));
-	double (*coor_center)[2] = malloc(4*N * sizeof(*coor_center));
+	double (*coor)[2]			= malloc(4*N * sizeof(*coor));
+	double (*coor_mid)[2]		= malloc(4*N * sizeof(*coor_mid));
+	double (*coor_center)[2]	= malloc(4*N * sizeof(*coor_center));
 
 	Grid grid;
 	grid.vertices = malloc(N * sizeof(*grid.vertices));
 	grid.edges    = malloc(N * sizeof(*grid.edges));
 	grid.corners  = malloc(N * sizeof(*grid.corners));
-	grid.center   = malloc(N * sizeof(double));
-	grid.mass     = malloc(N * sizeof(double));
-	grid.density  = malloc(N * sizeof(double));
-	grid.internal = malloc(N * sizeof(double));
+	grid.center   = malloc(N * sizeof(*grid.center));
+	grid.mass     = malloc(N * sizeof(*grid.mass));
+	grid.density  = malloc(N * sizeof(*grid.density));
+	grid.internal = malloc(N * sizeof(*grid.internal));
 
 	DualGrid dualgrid;
-	dualgrid.center   = malloc(N * sizeof(size_t));
-	dualgrid.corners  = malloc(N * sizeof(*dualgrid.corners));
-	dualgrid.mass     = malloc(N * sizeof(double));
-	dualgrid.velocity = malloc(N * sizeof(*dualgrid.velocity));
+	dualgrid.center 		= malloc(N * sizeof(*dualgrid.center));
+	dualgrid.num_corners 	= malloc(N * sizeof(*dualgrid.num_corners));
+	dualgrid.corners 		= malloc(N * sizeof(*dualgrid.corners));
+	dualgrid.mass			= malloc(N * sizeof(*dualgrid.mass));
+	dualgrid.velocity 		= malloc(N * sizeof(*dualgrid.velocity));
 
 	Corners corners;
-	corners.vertices = malloc(N * sizeof(*corners.vertices));
-	corners.mass     = malloc(4*N * sizeof(double));
-	corners.pressure = malloc(4*N * sizeof(double));
-	corners.force    = malloc(4*N * sizeof(double));
+	corners.cellvertex	= malloc(4*N * sizeof(*corners.cellvertex));
+	corners.cellcenter	= malloc(4*N * sizeof(*corners.cellcenter));
+	corners.edgemids	= malloc(4*N * sizeof(*corners.edgemids));
+	corners.mass		= malloc(4*N * sizeof(*corners.mass));
+	corners.pressure	= malloc(4*N * sizeof(*corners.pressure));
+	corners.force		= malloc(4*N * sizeof(*corners.force));
 
 	Edges edges0;
 	edges0.vertices = malloc(4*N * sizeof(*edges0.vertices));
-	edges0.mid	    = malloc(N * sizeof(double));
-	edges0.boundary = malloc(N * sizeof(size_t));
-
-
+	edges0.mid	    = malloc(4*N * sizeof(*edges0.mid));
+	edges0.boundary = malloc(4*N * sizeof(*edges0.boundary));
 
 	Nodes nodes;
-	nodes.id 			   = malloc(N * sizeof(size_t));
-	nodes.neighbor_corners = malloc(N * sizeof(nodes.neighbor_corners));
+	nodes.neighbor_corners 		= malloc(4*N * sizeof(nodes.neighbor_corners));
+	nodes.num_neighbor_corners	= malloc(4*N * sizeof(nodes.num_neighbor_corners));
+
+
+	// initialize by SIZE_MAX to avoid using undefined value unknowingly
+	for (size_t iNode = 0; iNode < 4*N; ++iNode) {
+	    for (size_t j = 0; j < 4; ++j) {
+	        nodes.neighbor_corners[iNode][j] = SIZE_MAX;
+	        dualgrid.corners[iNode][j] = SIZE_MAX;
+	    }
+	}
 
 
 /****************************
@@ -416,9 +438,9 @@ int main()
 			size_t public_nodes = 0;
 			
 			for (size_t iEdgeNode = 0; iEdgeNode < 2; ++iEdgeNode){
-				for (size_t iCellNode = 0; iCellNode < 4; ++iCellNode) {
+				for (size_t icellvertex = 0; icellvertex < 4; ++icellvertex) {
 				
-					if(grid.vertices[iCell][iCellNode] 
+					if(grid.vertices[iCell][icellvertex] 
 						== edges.vertices[iEdge][iEdgeNode]) {
 							++public_nodes;
 					}
@@ -436,18 +458,101 @@ int main()
 		}
 		
 	}
+/*
+	printf("\n Cell: \n");
+    for (size_t iCell = 0; iCell < numCells	; iCell++) {
+        printf("%zu : v1(%zu) v2(%zu) v3(%zu) v4(%zu)\n",
+               	iCell,
+				grid.vertices[iCell][0],
+				grid.vertices[iCell][1],
+				grid.vertices[iCell][2],
+				grid.vertices[iCell][3] );
+
+		printf("edges: e1(%zu,%zu) e2(%zu,%zu) e3(%zu,%zu) e4(%zu,%zu)\n",
+				edges.vertices[ grid.edges[iCell][0] ][0],
+				edges.vertices[ grid.edges[iCell][0] ][1],
+				edges.vertices[ grid.edges[iCell][1] ][0],
+				edges.vertices[ grid.edges[iCell][1] ][1],
+				edges.vertices[ grid.edges[iCell][2] ][0],
+				edges.vertices[ grid.edges[iCell][2] ][1],
+				edges.vertices[ grid.edges[iCell][3] ][0],
+				edges.vertices[ grid.edges[iCell][3] ][1]);
+
+		printf("\n");
+    }
+*/
+
+// Construct corners
+	size_t cCorner = 0;
+	
+	for (size_t iCell = 0; iCell < numCells	; ++iCell) {
+		for (size_t iVertex = 0; iVertex < 4; ++iVertex) {
+		
+			size_t cellVertex = grid.vertices[iCell][iVertex];
+			
+			// find neighbor edges of the vertex
+			size_t midpoint[2] = {0, 0};
+			size_t cMidpoint = 0;
+			for(size_t iEdge = 0; iEdge < 4; ++iEdge) {
+				size_t edge = grid.edges[iCell][iEdge];
+				if( (edges.vertices[edge][0] == cellVertex)
+					|| (edges.vertices[edge][1] == cellVertex))
+				{
+					midpoint[cMidpoint] = edges.mid[edge];
+					++cMidpoint;
+				}
+			}
+
+			// set vertices of the corner
+			corners.cellvertex[cCorner] 	 = cellVertex;
+			corners.cellcenter[cCorner]  = grid.center[iCell];
+			corners.edgemids[cCorner][0] = midpoint[0];
+			corners.edgemids[cCorner][1] = midpoint[1];
+
+			// record subordination to father cell
+			grid.corners[iCell][iVertex] = cCorner;
+
+			++cCorner;
+		}
+	}
+
+	size_t numCorners = cCorner;
 
 
+// Record nodes' neighbor corners
+	for (size_t iNode = 0; iNode < numNodes; ++iNode) {
+		size_t cNeighbor = 0;
+		for (size_t iCorner = 0; iCorner < numCorners; ++iCorner) {
+		
+			if( corners.cellvertex[iCorner] == iNode) {
+				if (cNeighbor >= 4) {
+					fprintf(stderr, "Node %zu has more than 4 corners\n", iNode);
+					exit(EXIT_FAILURE);
+				}
 
+				nodes.neighbor_corners[iNode][cNeighbor] = iCorner;
+				++cNeighbor;
+			}
+			
+		}
 
+		nodes.num_neighbor_corners[iNode] = cNeighbor;
+	}
+	
 
-
-
-
-
-
-
-
+// Construct corners
+	for (size_t iNode = 0; iNode < numNodes; ++iNode) {
+	
+		dualgrid.center[iNode]		 = iNode;
+		
+		size_t num_corners = nodes.num_neighbor_corners[iNode];
+		dualgrid.num_corners[iNode] = num_corners;
+		
+		for (size_t iDualCorner = 0; iDualCorner < num_corners; ++iDualCorner) {
+			dualgrid.corners[iNode][iDualCorner] = \
+					nodes.neighbor_corners[iNode][iDualCorner];
+		}
+	}
 
 
 
@@ -470,11 +575,14 @@ int main()
 	free(grid.internal);
 
 	free(dualgrid.center);
+	free(dualgrid.num_corners);
 	free(dualgrid.corners);
 	free(dualgrid.mass);
 	free(dualgrid.velocity);
 
-	free(corners.vertices);
+	free(corners.cellvertex);
+	free(corners.cellcenter);
+	free(corners.edgemids);
 	free(corners.mass);
 	free(corners.pressure);
 	free(corners.force);
@@ -483,8 +591,8 @@ int main()
 	free(edges.mid);
 	free(edges.boundary);
 
-	free(nodes.id);
 	free(nodes.neighbor_corners);
+	free(nodes.num_neighbor_corners);
 	
 
 }

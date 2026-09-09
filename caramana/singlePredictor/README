@@ -139,7 +139,7 @@ typedef struct {
     // topology info
     size_t *x;
     size_t *corners;
-    // physical info
+    // physical infoautorandr
     double *mass;
     double *density;
     double *internal;
