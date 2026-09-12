@@ -45,7 +45,7 @@ $$
 
 前面使用角力来推动对偶单元(单元顶点) 移动, 下面继续使用角力更新内能以确保总能量守恒
 $$
-e^{n+1/2}_z = e_z^n - \frac{\Delta t}{M_z}\sum_{p\in z}f_p^{z, \sigma} \cdot v_p^{n+1/2},
+e^{n+1}_z = e_z^n - \frac{\Delta t}{M_z}\sum_{p\in z}f_p^{z, \sigma} \cdot v_p^{n+1/2},
 $$
 其中半时刻速度为算术平均.
 
