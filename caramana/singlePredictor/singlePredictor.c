@@ -39,13 +39,11 @@ typedef struct {
 } Corners;
 
 
+
 double CalLength (double x0, double y0, double x1, double y1) {
 	double length = sqrt( pow((x0-x1),2) + pow((y0-y1),2) );
 	return length;
 }
-
-
-	
 
 
 double  CalCellArea(Grid grid, double (**coor_node)[2], size_t idxCell0, size_t idxCell1) {
@@ -92,13 +90,17 @@ double  CalCellArea(Grid grid, double (**coor_node)[2], size_t idxCell0, size_t 
 	}
 }
 
-double CalPressure(double density, double interior) {
-	
+double CalPressure(double density, double interior, double gamma) {
+	return (gamma - 1) * density * interior;
 }
 
 
 
 double InitializeCellAveDensity(size_t idxCell0, size_t idxCell1) {
+	
+}
+
+double InitializeDualAveMomentum(size_t idxCell0, size_t idxCell1) {
 	
 }
 
@@ -111,11 +113,127 @@ double InitializeCellInterior(size_t idxCell0, size_t idxCell1) {
 }
 
 
+void MapNeighborDual(size_t iDual0, size_t iDual1, size_t iNeigh, size_t idxNeigh[2]) {
+// map {0,1,2,3} to {(-1,0), (0,-1), (1,0), (0,1)}
+	idxNeigh[0] = iDual0 + (iNeigh == 2) - (iNeigh == 0);
+	idxNeigh[1] = iDual1 + (iNeigh == 3) - (iNeigh == 1);
+}
+
+double CalDistance(size_t node0[2], size_t node1[2], double (**coor_node)[2]) {
+// general distance calculator of two 2d arrays
+	double diffX = coor_node[node0[0]] - coor_node[node1[0]];
+	double diffY = coor_node[node0[1]] - coor_node[node1[1]];
+	return sqrt( pow(diffX,2) + pow(diffY,2) );
+}
+
+double GetNorm2(double vector[2]) {
+// 2d vector 2-norm
+	return sqrt( pow(vector[0],2) + pow(vector[1],2) );
+}
+
+double GetMinDouble(double a, double b) {
+	if(a < b)
+		return a;
+	else 
+		return b;
+}
+
+double GetMaxDouble(double a, double b) {
+	if(a > b)
+		return a;
+	else 
+		return b;
+}
+
+double CalNeighAcousticSpeed(size_t iDual0, size_t iDual1, Grid grid, double gamma) {
+// use max of neighbor cell acou speed as dual's acou speed
+	// find dual's neighbor cells
+	double dualAcoustic = 0.0;
+	for(size_t iNeigh = 0; iNeigh < 4; ++iNeigh) {
+		size_t idxNeighCell0 = iDual0 - iNeigh/2;
+		size_t idxNeighCell1 = iDual1 - iNeigh%2;
+
+		double cellInterior = grid.interior[idxNeighCell0][idxNeighCell1];
+
+		double cellAcoustic = sqrt(gamma * (gamma-1) * cellInterior);
+
+		dualAcoustic = GetMaxDouble(cellAcoustic, dualAcoustic);
+	}
+
+	return dualAcoustic;
+}
+
+void ApplyBoundatyCondition(Grid grid, char *bc, size_t numGhCell0, size_t numGhCell1) {
+
+	if(strcmp(bc, "free") == 0) {
+		// (0,1) -- (0,N-1) row
+		for(size_t iBoundCell = 1; iBoundCell < numGhCell1-1; ++iBoundCell) {
+
+			grid.mass[iBoundCell][0] 		= grid.mass[iBoundCell][1];
+			grid.pressure[iBoundCell][0] 	= grid.pressure[iBoundCell][1];
+			grid.interior[iBoundCell][0] 	= grid.interior[iBoundCell][1];
+		}
+		// (N,1) -- (N,N-1) row
+		for(size_t iBoundCell = 1; iBoundCell < numGhCell1-1; ++iBoundCell) {
+
+			grid.mass[iBoundCell][numGhCell0-1] 		= grid.mass[iBoundCell][numGhCell0-2];
+			grid.pressure[iBoundCell][numGhCell0-1] 	= grid.pressure[iBoundCell][numGhCell0-2];
+			grid.interior[iBoundCell][numGhCell0-1] 	= grid.interior[iBoundCell][numGhCell0-2];
+		}
+		// (1,0) -- (N-1,0) column
+		for(size_t iBoundCell = 1; iBoundCell < numGhCell0-1; ++iBoundCell) {
+
+			grid.mass[0][iBoundCell] 		= grid.mass[1][iBoundCell];
+			grid.pressure[0][iBoundCell]	= grid.pressure[1][iBoundCell];
+			grid.interior[0][iBoundCell] 	= grid.interior[1][iBoundCell];
+		}
+		// (N,1) -- (N,N-1) column
+		for(size_t iBoundCell = 1; iBoundCell < numGhCell0-1; ++iBoundCell) {
+
+			grid.mass[iBoundCell][numGhCell0-1] 		= grid.mass[iBoundCell][numGhCell0-2];
+			grid.pressure[iBoundCell][numGhCell0-1] 	= grid.pressure[iBoundCell][numGhCell0-2];
+			grid.interior[iBoundCell][numGhCell0-1] 	= grid.interior[iBoundCell][numGhCell0-2];
+		}
+
+		// four cells at corners
+		size_t cornerCells[4][2] = { {0,0}, {0,numGhCell0-1}, {numGhCell1-1,0}, {numGhCell1-1, numGhCell0-1} };
+		size_t cornerNeigh[4][4] = { {1,0, 0,1}, 
+									 {1,numGhCell0-1, 0,numGhCell0-2},
+									 {numGhCell1-1,1, numGhCell1-2,0},
+									 {numGhCell1-2, numGhCell0-1, numGhCell1-1, numGhCell0-2} };
+		for(size_t iCornerCell = 0; iCornerCell < 4; ++iCornerCell) {
+
+			grid.mass[ cornerCells[iCornerCell][0] ][ cornerCells[iCornerCell][1] ] = \
+				0.5 * ( grid.mass[ cornerNeigh[iCornerCell][0] ][ cornerNeigh[iCornerCell][1] ] 
+					   +grid.mass[ cornerNeigh[iCornerCell][2] ][ cornerNeigh[iCornerCell][3] ] );
+					   
+			grid.pressure[ cornerCells[iCornerCell][0] ][ cornerCells[iCornerCell][1] ] = \
+				0.5 * ( grid.pressure[ cornerNeigh[iCornerCell][0] ][ cornerNeigh[iCornerCell][1] ] 
+					   +grid.pressure[ cornerNeigh[iCornerCell][2] ][ cornerNeigh[iCornerCell][3] ] );
+					   
+			grid.interior[ cornerCells[iCornerCell][0] ][ cornerCells[iCornerCell][1] ] = \
+				0.5 * ( grid.interior[ cornerNeigh[iCornerCell][0] ][ cornerNeigh[iCornerCell][1] ] 
+					   +grid.interior[ cornerNeigh[iCornerCell][2] ][ cornerNeigh[iCornerCell][3] ] );
+		}
+
+		
+		
+	}
+	else if (strcmp(bc, "periodic") == 0) {
+		
+	}
+	else {
+		printf("Wrong boundary condition in ApplyBoundatyCondition()\n");
+	}
+}
 
 
 
 int main()
 {
+
+	const double GAMMA 	= 1.4;
+	const double CFL	= 0.2;
 
 	const double X0 = 1.0;
 	const double X1 = 1.0;
@@ -344,7 +462,43 @@ int main()
 	double t = 0.0;
 
 	while (t < T) {
+		// Apply boundary condition
+		ApplyBoundatyCondition(grid, "free", numGhCell0, numGhCell1);	// "free" or "periodic"
+
+	
+// CFL 条件这里有待考虑, 是否能更细致
+
 		// Determine time step length
+		double tau = T;
+		
+		for (size_t iDual0 = 0; iDual0 < numDual0; ++iDual0) {
+			for (size_t iDual1 = 0; iDual1 < numDual1; ++iDual1){
+
+				double localMinDistance = X0;
+				for(size_t iNeigh = 0; iNeigh < 4; ++iNeigh) {
+				// compare every physical dual with its neighbors
+					size_t idxNeigh[2];
+					MapNeighborDual(iDual0, iDual1, iNeigh, idxNeigh);
+					// map local idx to global idx
+// 这里距离用了对偶单元中心距离, 不知是否合理
+					double localDistance = CalDistance(dualgrid.center[iDual0][iDual1], 
+													   dualgrid.center[idxNeigh[0]][idxNeigh[1]], coor_node);
+					localMinDistance = GetMinDouble(localDistance, localMinDistance);
+				}
+			
+				double localAbsSpeed = GetNorm2(dualgrid.velocity[iDual0][iDual1]);
+				double localAcousticSpeed = CalNeighAcousticSpeed(iDual0, iDual1, grid, GAMMA);
+// 这里也有一些小问题, 声速和速度的定义不在同一个地方
+
+				double localMaxSpeed = localAbsSpeed + localAcousticSpeed;
+				double localTau = localMinDistance / localMaxSpeed / CFL;
+
+				tau = GetMinDouble(localTau, tau);
+			}
+		}
+
+		t += tau;
+		
 		
 
 	
@@ -408,63 +562,63 @@ int main()
 		}
 		
 
-		// Update dual momentum 
-		for (size_t iGhDual0 = 0; iGhDual0 < numGhDual0; ++iGhDual0) {
-			for (size_t iGhDual1 = 0; iGhDual1 < numGhDual1; ++iGhDual1) {
+		// Update physical dual momentum 
+		for (size_t iDual0 = 0; iDual0 < numGhDual0; ++iDual0) {
+			for (size_t iDual1 = 0; iDual1 < numGhDual1; ++iDual1) {
 
 				double acceleration[2] = {0.0, 0.0};
 				for (size_t iSubCorner = 0; iSubCorner < 4; ++iSubCorner) {
-					size_t idxCorner0 = 2*iGhDual0 - 1 + iSubCorner / 2;
-					size_t idxCorner1 = 2*iGhDual1 - 1 + iSubCorner % 2;
+					size_t idxCorner0 = 2*iDual0 - 1 + iSubCorner / 2;
+					size_t idxCorner1 = 2*iDual1 - 1 + iSubCorner % 2;
 					
-					acceleration[0] += corners.force[idxCorner0][idxCorner1][0] / dualgrid.mass[iGhDual0][iGhDual1];
-					acceleration[1] += corners.force[idxCorner0][idxCorner1][1] / dualgrid.mass[iGhDual0][iGhDual1];
+					acceleration[0] += corners.force[idxCorner0][idxCorner1][0] / dualgrid.mass[iDual0][iDual1];
+					acceleration[1] += corners.force[idxCorner0][idxCorner1][1] / dualgrid.mass[iDual0][iDual1];
 				}
 
-				dualgrid.halftime_velocity[iGhDual0][iGhDual1][0] = \
-						 dualgrid.velocity[iGhDual0][iGhDual1][0] + tau/2.0 * acceleration[0];
-				dualgrid.halftime_velocity[iGhDual0][iGhDual1][1] = \
-						 dualgrid.velocity[iGhDual0][iGhDual1][1] + tau/2.0 * acceleration[1];
+				dualgrid.halftime_velocity[iDual0][iDual1][0] = \
+						 dualgrid.velocity[iDual0][iDual1][0] + tau/2.0 * acceleration[0];
+				dualgrid.halftime_velocity[iDual0][iDual1][1] = \
+						 dualgrid.velocity[iDual0][iDual1][1] + tau/2.0 * acceleration[1];
 
-				dualgrid.velocity[iGhDual0][iGhDual1][0] += tau * acceleration[0];
-				dualgrid.velocity[iGhDual0][iGhDual1][1] += tau * acceleration[1];
+				dualgrid.velocity[iDual0][iDual1][0] += tau * acceleration[0];
+				dualgrid.velocity[iDual0][iDual1][1] += tau * acceleration[1];
 
 			}
 		}
 
-		// Update cell interior energy
-		for (size_t iGhCell0 = 0; iGhCell0 < numCell0; ++iGhCell0) {
-			for (size_t iGhCell1 = 0; iGhCell1 < numCell1; ++iGhCell1) {
+		// Update physical cell interior energy
+		for (size_t iCell0 = 0; iCell0 < numCell0; ++iCell0) {
+			for (size_t iCell1 = 0; iCell1 < numCell1; ++iCell1) {
 
 				for (size_t iSubCorner = 0; iSubCorner < 4; ++iSubCorner) {
 
 					double corner_velocity[2];
-					size_t idxFatherDual0 = iGhCell0 + iSubCorner / 2;
-					size_t idxFatherDual1 = iGhCell1 + iSubCorner % 2;
+					size_t idxFatherDual0 = iCell0 + iSubCorner / 2;
+					size_t idxFatherDual1 = iCell1 + iSubCorner % 2;
 					corner_velocity[0] = dualgrid.halftime_velocity[idxFatherDual0][idxFatherDual1][0];
 					corner_velocity[1] = dualgrid.halftime_velocity[idxFatherDual0][idxFatherDual1][1];
 
 
-					size_t idxCorner0 = 2*iGhCell0 + iSubCorner / 2;
-					size_t idxCorner1 = 2*iGhCell1 + iSubCorner % 2;
+					size_t idxCorner0 = 2*iCell0 + iSubCorner / 2;
+					size_t idxCorner1 = 2*iCell1 + iSubCorner % 2;
 					
 					double cornerWork = \
 							corners.force[idxCorner0][idxCorner1][0] * corner_velocity[0] \
 						  + corners.force[idxCorner0][idxCorner1][1] * corner_velocity[1];
 
-					grid.interior[iGhCell0][iGhCell1] += - tau * cornerWork / grid.mass[iGhCell0][iGhCell1];
+					grid.interior[iCell0][iCell1] += - tau * cornerWork / grid.mass[iCell0][iCell1];
 			
 				}
 			}
 		}
 
 		// Update dual center (cell vertex) position
-		for (size_t iGhDual0 = 0; iGhDual0 < numDual0; ++iGhDual0) {
-			for (size_t iGhDual1 = 0; iGhDual1 < numDual1; ++iGhDual1) {
-				size_t idxNode0 = dualgrid.center[iGhDual0][iGhDual1][0];
-				size_t idxNode1 = dualgrid.center[iGhDual0][iGhDual1][1];
-				coor_node[idxNode0][idxNode1][0] += tau * dualgrid.halftime_velocity[iGhDual0][iGhDual1][0];
-				coor_node[idxNode0][idxNode1][1] += tau * dualgrid.halftime_velocity[iGhDual0][iGhDual1][1];
+		for (size_t iDual0 = 0; iDual0 < numDual0; ++iDual0) {
+			for (size_t iDual1 = 0; iDual1 < numDual1; ++iDual1) {
+				size_t idxNode0 = dualgrid.center[iDual0][iDual1][0];
+				size_t idxNode1 = dualgrid.center[iDual0][iDual1][1];
+				coor_node[idxNode0][idxNode1][0] += tau * dualgrid.halftime_velocity[iDual0][iDual1][0];
+				coor_node[idxNode0][idxNode1][1] += tau * dualgrid.halftime_velocity[iDual0][iDual1][1];
 			}
 		}
 
@@ -480,20 +634,9 @@ int main()
 				double cellArea = CalCellArea(grid, coor_node, iCell0, iCell1);
 				double cellDensity  = grid.mass[iCell0][iCell1] / cellArea;
 
-				grid.pressure[iCell0][iCell1] = CalPressure(cellDensity, grid.interior[iCell0][iCell1]);
+				grid.pressure[iCell0][iCell1] = CalPressure(cellDensity, grid.interior[iCell0][iCell1], GAMMA);
 			}
 		}
-
-
-
-
-		// Apply boundary condition
-
-
-
-
-
-
 
 	}
 	
