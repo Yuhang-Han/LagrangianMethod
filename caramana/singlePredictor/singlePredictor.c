@@ -551,6 +551,7 @@ int main()
 *****************************/
 
 	double t = 0.0;
+	size_t tcounter = 0;
 	
 	double E0 = CalTotalEnergy(grid, dualgrid, numCell0, numCell1, numDual0, numDual1);
 	printf(
@@ -598,6 +599,7 @@ int main()
 
 
 		t += tau;
+		++tcounter;
 		
 		
 
@@ -704,14 +706,12 @@ int main()
 		}
 
 
-		double E = CalTotalEnergy(grid, dualgrid, numCell0, numCell1, numDual0, numDual1);
+		if (tcounter % (10*numCell0) == 0) {
+			double E = CalTotalEnergy(grid, dualgrid, numCell0, numCell1, numDual0, numDual1);
 
-		printf(
-		    "t=%e E=%20.16e relerr=%20.16e\n",
-		    t,
-		    E,
-		    (E-E0)/E0
-		);
+			printf("t=%e E=%20.16e relerr=%20.16e\n",
+			    	t,E,(E-E0)/E0);
+		}
 
 	}
 
