@@ -38,11 +38,66 @@ typedef struct {
     double (*force_data)[2];
 } Corners;
 
+static const int cornerOffset[4][2] = {
+    {0, 0},   // 0: bottom-left
+    {1, 0},   // 1: bottom-right
+    {1, 1},   // 2: top-right
+    {0, 1}    // 3: top-left
+};
 
 
-double CalLength (double x0, double y0, double x1, double y1) {
-	double length = sqrt( pow((x0-x1),2) + pow((y0-y1),2) );
+
+double CalLength (size_t x0, size_t y0, size_t x1, size_t y1, double (**coor_node)[2]) {
+	double coor_x0 = coor_node[x0][y0][0];
+	double coor_y0 = coor_node[x0][y0][1];
+	double coor_x1 = coor_node[x1][y1][0];
+	double coor_y1 = coor_node[x1][y1][1];
+	double length = sqrt( pow((coor_x0-coor_x1),2) + pow((coor_y0-coor_y1),2) );
 	return length;
+}
+
+void CalCellCornerVectors(
+    Grid grid,
+    double (**coor_node)[2],
+    size_t ic,
+    size_t jc,
+    double C[4][2])
+{
+    double X[4][2];
+    double N[4][2];
+
+    /* Obtain the four physical vertex coordinates.
+       Vertex order: BL, BR, TR, TL = CCW. */
+    for (size_t k = 0; k < 4; ++k) {
+        size_t ni = grid.vertices[ic][jc][k][0];
+        size_t nj = grid.vertices[ic][jc][k][1];
+
+        X[k][0] = coor_node[ni][nj][0];
+        X[k][1] = coor_node[ni][nj][1];
+    }
+
+    /* Full outward edge normals.
+       For CCW polygon:
+           edge = (dx,dy)
+           outward normal = (dy,-dx)
+    */
+    for (size_t k = 0; k < 4; ++k) {
+        size_t kp = (k + 1) % 4;
+
+        double dx = X[kp][0] - X[k][0];
+        double dy = X[kp][1] - X[k][1];
+
+        N[k][0] =  dy;
+        N[k][1] = -dx;
+    }
+
+    /* Corner vector = sum of the two half-edge normals */
+    for (size_t k = 0; k < 4; ++k) {
+        size_t km = (k + 3) % 4;
+
+        C[k][0] = 0.5 * (N[km][0] + N[k][0]);
+        C[k][1] = 0.5 * (N[km][1] + N[k][1]);
+    }
 }
 
 
@@ -97,19 +152,19 @@ double CalPressure(double density, double interior, double gamma) {
 
 
 double InitializeCellAveDensity(size_t idxCell0, size_t idxCell1) {
-	
+	return 1.0;
 }
 
 double InitializeDualAveMomentum(size_t idxCell0, size_t idxCell1) {
-	
+	return 0.0;
 }
 
 double InitializeCellPressure(size_t idxCell0, size_t idxCell1) {
-
+	return 1.0;
 }
 
 double InitializeCellInterior(size_t idxCell0, size_t idxCell1) {
-	
+	return 2.5;
 }
 
 
@@ -121,8 +176,11 @@ void MapNeighborDual(size_t iDual0, size_t iDual1, size_t iNeigh, size_t idxNeig
 
 double CalDistance(size_t node0[2], size_t node1[2], double (**coor_node)[2]) {
 // general distance calculator of two 2d arrays
-	double diffX = coor_node[node0[0]] - coor_node[node1[0]];
-	double diffY = coor_node[node0[1]] - coor_node[node1[1]];
+	double diffX = coor_node[node0[0]][node0[1]][0]
+	      		 - coor_node[node1[0]][node1[1]][0];
+	double diffY = coor_node[node0[0]][node0[1]][1]
+	      		 - coor_node[node1[0]][node1[1]][1];
+	
 	return sqrt( pow(diffX,2) + pow(diffY,2) );
 }
 
@@ -227,6 +285,38 @@ void ApplyBoundatyCondition(Grid grid, char *bc, size_t numGhCell0, size_t numGh
 	}
 }
 
+double CalTotalEnergy(
+    Grid grid,
+    DualGrid dualgrid,
+    size_t numCell0,
+    size_t numCell1,
+    size_t numDual0,
+    size_t numDual1)
+{
+    double Eint = 0.0;
+    double Ekin = 0.0;
+
+    for (size_t i = 1; i <= numCell0; ++i) {
+        for (size_t j = 1; j <= numCell1; ++j) {
+
+            Eint += grid.mass[i][j]
+                  * grid.interior[i][j];
+        }
+    }
+
+    for (size_t i = 1; i <= numDual0; ++i) {
+        for (size_t j = 1; j <= numDual1; ++j) {
+
+            double vx = dualgrid.velocity[i][j][0];
+            double vy = dualgrid.velocity[i][j][1];
+
+            Ekin += 0.5 * dualgrid.mass[i][j]
+                         * (vx*vx + vy*vy);
+        }
+    }
+
+    return Eint + Ekin;
+}
 
 
 int main()
@@ -261,11 +351,6 @@ int main()
 	const size_t numNode1 = numCell1 + 1;
 	const size_t numGhNode0 = numGhCell0 + 1;
 	const size_t numGhNode1 = numGhCell1 + 1;
-
-	const size_t numCenter0 = numCell0;
-	const size_t numCenter1 = numCell1;
-	const size_t numGhCenter0 = numGhCell0;
-	const size_t numGhCenter1 = numGhCell1;
 
 
 /***********************
@@ -335,15 +420,21 @@ int main()
 	// node coor
 	// dimension: [numGhNode0][numGhNode1]
 	double (**coor_node)  [2] = malloc(numGhNode0 	* sizeof(*coor_node));
-	double (**coor_center)[2] = malloc(numGhCenter0 * sizeof(*coor_center));
+//	double (**coor_center)[2] = malloc(numGhCenter0 * sizeof(*coor_center));
 	
 	double (*coor_node_data)  [2] 	= calloc(numGhNode0   *	numGhNode1, 	sizeof(*coor_node_data));
-	double (*coor_center_data)[2] 	= calloc(numGhCenter0 * numGhCenter1, 	sizeof(*coor_center_data));
+//	double (*coor_center_data)[2] 	= calloc(numGhCenter0 * numGhCenter1, 	sizeof(*coor_center_data));
 	
 	for (size_t i = 0; i < numGhNode0; i++) {
 		coor_node[i] 	= coor_node_data 	+ i * numGhNode1;
+		
+	}
+/*
+	for (size_t i = 0; i < numGhCenter0; i++) {
 		coor_center[i] 	= coor_center_data 	+ i * numGhCenter1;
 	}
+*/
+	
 
 
 /*****************************
@@ -356,30 +447,30 @@ int main()
 // (uniform) Grid geometry
 
 	// node and center coordinates
-	double cellH0 = X0 / numGhCell0;
-	double cellH1 = X1 / numGhCell1;
+	double cellH0 = X0 / numCell0;
+	double cellH1 = X1 / numCell1;
 	
 	for (size_t iGhNode0 = 0; iGhNode0 < numGhNode0; ++iGhNode0) {
 		for (size_t iGhNode1 = 0; iGhNode1 < numGhNode1; ++iGhNode1) {
-			coor_node[iGhNode0][iGhNode1][0] = iGhNode0 * cellH0;
-			coor_node[iGhNode0][iGhNode1][1] = iGhNode1 * cellH1;
+			coor_node[iGhNode0][iGhNode1][0] = ((double)iGhNode0 -1.0) * cellH0;
+			coor_node[iGhNode0][iGhNode1][1] = ((double)iGhNode1 -1.0) * cellH1;
 		}
 	}
-
+/*
 	for (size_t iGhCenter0 = 0; iGhCenter0 < numGhCenter0; ++iGhCenter0) {
 		for (size_t iGhCenter1 = 0; iGhCenter1 < numGhCenter1; ++iGhCenter1) {
 			coor_center[iGhCenter0][iGhCenter1][0] = (iGhCenter0 + 0.5) * cellH0;
 			coor_center[iGhCenter0][iGhCenter1][1] = (iGhCenter1 + 0.5) * cellH1;
 		}
 	}
-
+*/
 	// cell vertices
 	for (size_t iGhCell0 = 0; iGhCell0 < numGhCell0; ++iGhCell0) {
 		for (size_t iGhCell1 = 0; iGhCell1 < numGhCell1; ++iGhCell1) {
 		
 			for (size_t iCellVertex = 0; iCellVertex < 4; ++iCellVertex) {
-				grid.vertices[iGhCell0][iGhCell1][iCellVertex][0] = iGhCell0 + iCellVertex / 2;
-				grid.vertices[iGhCell0][iGhCell1][iCellVertex][1] = iGhCell1 + iCellVertex % 2;
+				grid.vertices[iGhCell0][iGhCell1][iCellVertex][0] = iGhCell0 + cornerOffset[iCellVertex][0];
+				grid.vertices[iGhCell0][iGhCell1][iCellVertex][1] = iGhCell1 + cornerOffset[iCellVertex][1];
 				/*  2   	3
 					*-------*
 					| 	| 	|
@@ -413,7 +504,7 @@ int main()
 
 			double cornerArea = 1.0/4 * cellH0 * cellH1;
 			
-			corners.mass[iGhCorner0][iGhCorner0] = cornerArea * InitializeCellAveDensity(idxFatherCell0, idxFatherCell1);
+			corners.mass[iGhCorner0][iGhCorner1] = cornerArea * InitializeCellAveDensity(idxFatherCell0, idxFatherCell1);
 		}
 	}
 
@@ -424,8 +515,8 @@ int main()
 			// cell mass
 			grid.mass[iGhCell0][iGhCell1] = 0.0;
 			for (size_t iSubCorner = 0; iSubCorner < 4; ++iSubCorner) {
-				size_t idxCorner0 = 2*iGhCell0 + iSubCorner / 2;
-				size_t idxCorner1 = 2*iGhCell1 + iSubCorner % 2;
+				size_t idxCorner0 = 2*iGhCell0 + cornerOffset[iSubCorner][0];
+				size_t idxCorner1 = 2*iGhCell1 + cornerOffset[iSubCorner][1];
 				grid.mass[iGhCell0][iGhCell1] += corners.mass[idxCorner0][idxCorner1];
 			}
 
@@ -438,15 +529,15 @@ int main()
 	}
 
 	// dual
-	for (size_t iGhDual0 = 0; iGhDual0 < numGhDual0; ++iGhDual0) {
-		for (size_t iGhDual1 = 0; iGhDual1 < numGhDual1; ++iGhDual1){
+	for (size_t iDual0 = 1; iDual0 <= numDual0; ++iDual0) {
+		for (size_t iDual1 = 1; iDual1 <= numDual1; ++iDual1){
 
 			// dual mass
-			dualgrid.mass[iGhDual0][iGhDual1] = 0.0;
+			dualgrid.mass[iDual0][iDual1] = 0.0;
 			for (size_t iSubCorner = 0; iSubCorner < 4; ++iSubCorner) {
-				size_t idxCorner0 = 2*iGhDual0 - 1 + iSubCorner / 2;
-				size_t idxCorner1 = 2*iGhDual1 - 1 + iSubCorner % 2;
-				dualgrid.mass[iGhDual0][iGhDual1] += corners.mass[idxCorner0][idxCorner1];
+				size_t idxCorner0 = 2*iDual0 - 1 + cornerOffset[iSubCorner][0];
+				size_t idxCorner1 = 2*iDual1 - 1 + cornerOffset[iSubCorner][1];
+				dualgrid.mass[iDual0][iDual1] += corners.mass[idxCorner0][idxCorner1];
 			}
 
 		}
@@ -460,19 +551,24 @@ int main()
 *****************************/
 
 	double t = 0.0;
+	
+	double E0 = CalTotalEnergy(grid, dualgrid, numCell0, numCell1, numDual0, numDual1);
+	printf(
+	    "t=%e E=%20.16e \n",
+	    t, E0);
 
 	while (t < T) {
 		// Apply boundary condition
 		ApplyBoundatyCondition(grid, "free", numGhCell0, numGhCell1);	// "free" or "periodic"
+// 边界处理需要细考虑
 
-	
-// CFL 条件这里有待考虑, 是否能更细致
 
 		// Determine time step length
+/*
 		double tau = T;
 		
-		for (size_t iDual0 = 0; iDual0 < numDual0; ++iDual0) {
-			for (size_t iDual1 = 0; iDual1 < numDual1; ++iDual1){
+		for (size_t iDual0 = 1; iDual0 < numDual0; ++iDual0) {
+			for (size_t iDual1 = 1; iDual1 < numDual1; ++iDual1){
 
 				double localMinDistance = X0;
 				for(size_t iNeigh = 0; iNeigh < 4; ++iNeigh) {
@@ -491,11 +587,15 @@ int main()
 // 这里也有一些小问题, 声速和速度的定义不在同一个地方
 
 				double localMaxSpeed = localAbsSpeed + localAcousticSpeed;
-				double localTau = localMinDistance / localMaxSpeed / CFL;
+				double localTau = CFL * localMinDistance / localMaxSpeed;
 
 				tau = GetMinDouble(localTau, tau);
 			}
 		}
+*/
+		double tau = 1E-4;
+// 拉氏的CFL 条件与Euler 不同
+
 
 		t += tau;
 		
@@ -503,73 +603,38 @@ int main()
 
 	
 		// Calculate corner force
-		for (size_t iGhCorner0 = 0; iGhCorner0 < numGhCorner0; ++iGhCorner0) {
-			for (size_t iGhCorner1 = 0; iGhCorner1 < numGhCorner1; ++iGhCorner1){
-			
-				// calculate corner vector
-				size_t idxFatherCell0 = iGhCorner0 / 2;
-				size_t idxFatherCell1 = iGhCorner1 / 2;
+		for (size_t ic = 0; ic < numGhCell0; ++ic) {
+		    for (size_t jc = 0; jc < numGhCell1; ++jc) {
 
-				double lenCellEdge[4];
-				size_t refNode0 = grid.vertices[idxFatherCell0][idxFatherCell1][0][0];
-				size_t refNode1 = grid.vertices[idxFatherCell0][idxFatherCell1][0][1];
-				for(size_t iCellEdge = 0; iCellEdge < 4; ++iCellEdge) {
-					size_t tmp0 = iCellEdge ^ (iCellEdge >> 1);
-					size_t tmp1 = (iCellEdge+1) ^ ((iCellEdge+1) >> 1);
-					lenCellEdge[iCellEdge] = CalLength(refNode0 + ((tmp0 >> 1) & 1), refNode1 + (tmp0 & 1),
-													   refNode0 + ((tmp1 >> 1) & 1), refNode1 + (tmp1 & 1));
-				}
-					/*     2
-						*-------*
-						| 2	| 3	|
-					3	--------- 1
-						| 0 | 1	|
-						*-------*
-						    0		
-					*/
-				double cornerVector[2];
-				size_t subCornerId = iGhCorner0%2 + 2 * iGhCorner1%2;
-				double norm;
-				switch(subCornerId){
-					case 0: 
-						norm = sqrt(pow(lenCellEdge[3],2) + pow(lenCellEdge[0],2));
-						cornerVector[0] = -lenCellEdge[3] / norm;
-						cornerVector[1] = -lenCellEdge[0] / norm;
-						break;
-					case 1:
-						norm = sqrt(pow(lenCellEdge[0],2) + pow(lenCellEdge[1],2));
-						cornerVector[0] =  lenCellEdge[1] / norm;
-						cornerVector[1] = -lenCellEdge[0] / norm;	
-						break;
-					case 2:
-						norm = sqrt(pow(lenCellEdge[2],2) + pow(lenCellEdge[3],2));
-						cornerVector[0] = -lenCellEdge[3] / norm;
-						cornerVector[1] =  lenCellEdge[2] / norm;	
-						break;
-					case 3:
-						norm = sqrt(pow(lenCellEdge[1],2) + pow(lenCellEdge[2],2));
-						cornerVector[0] =  lenCellEdge[1] / norm;
-						cornerVector[1] =  lenCellEdge[2] / norm;	
-						break;
-				}
+		        double C[4][2];
+		        CalCellCornerVectors(grid, coor_node, ic, jc, C);
 
-				// corner force
-				double cellPressure = grid.pressure[idxFatherCell0][idxFatherCell1];
-				corners.force[iGhCorner0][iGhCorner1][0] = cellPressure * cornerVector[0];
-				corners.force[iGhCorner0][iGhCorner1][1] = cellPressure * cornerVector[1];
-				
-			}
+		        for (size_t k = 0; k < 4; ++k) {
+
+		            size_t I = 2*ic + cornerOffset[k][0];
+		            size_t J = 2*jc + cornerOffset[k][1];
+
+		            corners.vector[I][J][0] = C[k][0];
+		            corners.vector[I][J][1] = C[k][1];
+
+		            corners.force[I][J][0]
+		                = grid.pressure[ic][jc] * C[k][0];
+
+		            corners.force[I][J][1]
+		                = grid.pressure[ic][jc] * C[k][1];
+		        }
+		    }
 		}
 		
 
 		// Update physical dual momentum 
-		for (size_t iDual0 = 0; iDual0 < numGhDual0; ++iDual0) {
-			for (size_t iDual1 = 0; iDual1 < numGhDual1; ++iDual1) {
+		for (size_t iDual0 = 1; iDual0 <= numDual0; ++iDual0) {
+			for (size_t iDual1 = 1; iDual1 <= numDual1; ++iDual1) {
 
 				double acceleration[2] = {0.0, 0.0};
 				for (size_t iSubCorner = 0; iSubCorner < 4; ++iSubCorner) {
-					size_t idxCorner0 = 2*iDual0 - 1 + iSubCorner / 2;
-					size_t idxCorner1 = 2*iDual1 - 1 + iSubCorner % 2;
+					size_t idxCorner0 = 2*iDual0 - 1 + cornerOffset[iSubCorner][0];
+					size_t idxCorner1 = 2*iDual1 - 1 + cornerOffset[iSubCorner][1];
 					
 					acceleration[0] += corners.force[idxCorner0][idxCorner1][0] / dualgrid.mass[iDual0][iDual1];
 					acceleration[1] += corners.force[idxCorner0][idxCorner1][1] / dualgrid.mass[iDual0][iDual1];
@@ -587,20 +652,20 @@ int main()
 		}
 
 		// Update physical cell interior energy
-		for (size_t iCell0 = 0; iCell0 < numCell0; ++iCell0) {
-			for (size_t iCell1 = 0; iCell1 < numCell1; ++iCell1) {
+		for (size_t iCell0 = 1; iCell0 <= numCell0; ++iCell0) {
+			for (size_t iCell1 = 1; iCell1 <= numCell1; ++iCell1) {
 
 				for (size_t iSubCorner = 0; iSubCorner < 4; ++iSubCorner) {
 
 					double corner_velocity[2];
-					size_t idxFatherDual0 = iCell0 + iSubCorner / 2;
-					size_t idxFatherDual1 = iCell1 + iSubCorner % 2;
+					size_t idxFatherDual0 = iCell0 + cornerOffset[iSubCorner][0];
+					size_t idxFatherDual1 = iCell1 + cornerOffset[iSubCorner][1];
 					corner_velocity[0] = dualgrid.halftime_velocity[idxFatherDual0][idxFatherDual1][0];
 					corner_velocity[1] = dualgrid.halftime_velocity[idxFatherDual0][idxFatherDual1][1];
 
 
-					size_t idxCorner0 = 2*iCell0 + iSubCorner / 2;
-					size_t idxCorner1 = 2*iCell1 + iSubCorner % 2;
+					size_t idxCorner0 = 2*iCell0 + cornerOffset[iSubCorner][0];
+					size_t idxCorner1 = 2*iCell1 + cornerOffset[iSubCorner][1];
 					
 					double cornerWork = \
 							corners.force[idxCorner0][idxCorner1][0] * corner_velocity[0] \
@@ -613,8 +678,8 @@ int main()
 		}
 
 		// Update dual center (cell vertex) position
-		for (size_t iDual0 = 0; iDual0 < numDual0; ++iDual0) {
-			for (size_t iDual1 = 0; iDual1 < numDual1; ++iDual1) {
+		for (size_t iDual0 = 1; iDual0 <= numDual0; ++iDual0) {
+			for (size_t iDual1 = 1; iDual1 <= numDual1; ++iDual1) {
 				size_t idxNode0 = dualgrid.center[iDual0][iDual1][0];
 				size_t idxNode1 = dualgrid.center[iDual0][iDual1][1];
 				coor_node[idxNode0][idxNode1][0] += tau * dualgrid.halftime_velocity[iDual0][iDual1][0];
@@ -628,8 +693,8 @@ int main()
 		
 
 		// Update cell pressure
-		for (size_t iCell0 = 0; iCell0 < numCell0; ++iCell0) {
-			for (size_t iCell1 = 0; iCell1 < numCell1; ++iCell1) {
+		for (size_t iCell0 = 1; iCell0 <= numCell0; ++iCell0) {
+			for (size_t iCell1 = 1; iCell1 <= numCell1; ++iCell1) {
 			
 				double cellArea = CalCellArea(grid, coor_node, iCell0, iCell1);
 				double cellDensity  = grid.mass[iCell0][iCell1] / cellArea;
@@ -638,9 +703,41 @@ int main()
 			}
 		}
 
-	}
-	
 
+		double E = CalTotalEnergy(grid, dualgrid, numCell0, numCell1, numDual0, numDual1);
+
+		printf(
+		    "t=%e E=%20.16e relerr=%20.16e\n",
+		    t,
+		    E,
+		    (E-E0)/E0
+		);
+
+	}
+
+
+
+
+
+// Test  diagnostics
+
+double maxVelocity = 0.0;
+
+for (size_t i = 1; i <= numDual0; ++i) {
+    for (size_t j = 1; j <= numDual1; ++j) {
+
+        double vx = dualgrid.velocity[i][j][0];
+        double vy = dualgrid.velocity[i][j][1];
+
+        double v = sqrt(vx*vx + vy*vy);
+
+        if (v > maxVelocity)
+            maxVelocity = v;
+    }
+}
+
+printf("t = %.8e, max|v| = %.16e\n",
+       t, maxVelocity);
 
 
 
@@ -684,5 +781,8 @@ int main()
 	free(corners.vector);
 	free(corners.mass);
 	free(corners.force);
+
+	free(coor_node_data);
+	free(coor_node);
 	
 }
