@@ -420,29 +420,16 @@ int main()
 	// node coor
 	// dimension: [numGhNode0][numGhNode1]
 	double (**coor_node)  [2] = malloc(numGhNode0 	* sizeof(*coor_node));
-//	double (**coor_center)[2] = malloc(numGhCenter0 * sizeof(*coor_center));
-	
 	double (*coor_node_data)  [2] 	= calloc(numGhNode0   *	numGhNode1, 	sizeof(*coor_node_data));
-//	double (*coor_center_data)[2] 	= calloc(numGhCenter0 * numGhCenter1, 	sizeof(*coor_center_data));
 	
 	for (size_t i = 0; i < numGhNode0; i++) {
 		coor_node[i] 	= coor_node_data 	+ i * numGhNode1;
-		
 	}
-/*
-	for (size_t i = 0; i < numGhCenter0; i++) {
-		coor_center[i] 	= coor_center_data 	+ i * numGhCenter1;
-	}
-*/
-	
 
 
 /*****************************
 * Initialize
 ******************************/
-//TODO: 检查所有索引应该用Gh 还是非Gh
-
-
 
 // (uniform) Grid geometry
 
@@ -561,11 +548,9 @@ int main()
 	while (t < T) {
 		// Apply boundary condition
 		ApplyBoundatyCondition(grid, "free", numGhCell0, numGhCell1);	// "free" or "periodic"
-// 边界处理需要细考虑
-
 
 		// Determine time step length
-/*
+
 		double tau = T;
 		
 		for (size_t iDual0 = 1; iDual0 < numDual0; ++iDual0) {
@@ -582,28 +567,21 @@ int main()
 													   dualgrid.center[idxNeigh[0]][idxNeigh[1]], coor_node);
 					localMinDistance = GetMinDouble(localDistance, localMinDistance);
 				}
-			
-				double localAbsSpeed = GetNorm2(dualgrid.velocity[iDual0][iDual1]);
+
 				double localAcousticSpeed = CalNeighAcousticSpeed(iDual0, iDual1, grid, GAMMA);
 // 这里也有一些小问题, 声速和速度的定义不在同一个地方
 
-				double localMaxSpeed = localAbsSpeed + localAcousticSpeed;
+				double localMaxSpeed = localAcousticSpeed;
 				double localTau = CFL * localMinDistance / localMaxSpeed;
 
 				tau = GetMinDouble(localTau, tau);
 			}
 		}
-*/
-		double tau = 1E-4;
-// 拉氏的CFL 条件与Euler 不同
 
 
 		t += tau;
 		++tcounter;
 		
-		
-
-	
 		// Calculate corner force
 		for (size_t ic = 0; ic < numGhCell0; ++ic) {
 		    for (size_t jc = 0; jc < numGhCell1; ++jc) {
@@ -688,10 +666,6 @@ int main()
 				coor_node[idxNode0][idxNode1][1] += tau * dualgrid.halftime_velocity[iDual0][iDual1][1];
 			}
 		}
-
-		// Update cell center position
-// 似乎不会直接用到单元中心?
-
 		
 
 		// Update cell pressure
