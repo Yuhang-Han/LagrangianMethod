@@ -152,19 +152,38 @@ double CalPressure(double density, double interior, double gamma) {
 
 
 double InitializeCellAveDensity(size_t idxCell0, size_t idxCell1) {
+	// free flow 
+	// one cell pressure disturb
 	return 1.0;
+
 }
 
 double InitializeDualAveMomentum(size_t idxCell0, size_t idxCell1) {
+	//free flow
+	// one cell pressure disturb
 	return 0.0;
 }
 
 double InitializeCellPressure(size_t idxCell0, size_t idxCell1) {
-	return 1.0;
+	// free flow
+	// return 1.0;
+	
+	// one cell pressure disturb
+    if (idxCell0 == 5 && idxCell1 == 5)
+        return 1.1;
+
+    return 1.0;
 }
 
 double InitializeCellInterior(size_t idxCell0, size_t idxCell1) {
-	return 2.5;
+	// free flow
+	// return 2.5;
+	
+	// one cell pressure disturb
+    if (idxCell0 == 5 && idxCell1 == 5)
+        return 2.75;
+
+    return 2.5;
 }
 
 
@@ -384,7 +403,7 @@ int main()
 	const double X0 = 1.0;
 	const double X1 = 1.0;
 
-	const double T  = 1.0;
+	const double T  = 1e-3;
 
 	const size_t numCell0 = 10;
 	const size_t numCell1 = 10;
@@ -608,7 +627,7 @@ int main()
 		// Determine time step length
 
 		double tau = T;
-		
+/*		
 		for (size_t iDual0 = 1; iDual0 < numDual0; ++iDual0) {
 			for (size_t iDual1 = 1; iDual1 < numDual1; ++iDual1){
 
@@ -633,7 +652,13 @@ int main()
 				tau = GetMinDouble(localTau, tau);
 			}
 		}
+*/
 
+		tau = T;
+		
+		if (t+tau > T) {
+			tau = T - t;
+		}
 
 		t += tau;
 		++tcounter;
@@ -766,15 +791,16 @@ for (size_t i = 1; i <= numDual0; ++i) {
     }
 }
 
-printf("t = %.8e, max|v| = %.16e\n",
-       t, maxVelocity);
+double E = CalTotalEnergy(grid, dualgrid, numCell0, numCell1, numDual0, numDual1);
+
+printf("t = %.8e, max|v| = %.16e, E=%20.16e\n",
+       t, maxVelocity, E);
 
 
-
-
-
-
-    
+printf("v_LD: (%f, %f) \n", dualgrid.velocity[5][5][0], dualgrid.velocity[5][5][1]);
+printf("v_LU: (%f, %f) \n", dualgrid.velocity[6][5][0], dualgrid.velocity[6][5][1]);
+printf("v_RD: (%f, %f) \n", dualgrid.velocity[5][6][0], dualgrid.velocity[5][6][1]);
+printf("v_RU: (%f, %f) \n", dualgrid.velocity[6][6][0], dualgrid.velocity[6][6][1]);
 
 
 
