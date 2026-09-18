@@ -224,6 +224,7 @@ double CalNeighAcousticSpeed(size_t iDual0, size_t iDual1, Grid grid, double gam
 void ApplyBoundatyCondition(Grid grid, char *bc, size_t numGhCell0, size_t numGhCell1) {
 
 	if(strcmp(bc, "free") == 0) {
+// 2D general free boundary is not quite reasonable
 		// (0,1) -- (0,N-1) row
 		for(size_t iBoundCell = 1; iBoundCell < numGhCell1-1; ++iBoundCell) {
 
@@ -248,9 +249,9 @@ void ApplyBoundatyCondition(Grid grid, char *bc, size_t numGhCell0, size_t numGh
 		// (N,1) -- (N,N-1) column
 		for(size_t iBoundCell = 1; iBoundCell < numGhCell0-1; ++iBoundCell) {
 
-			grid.mass[iBoundCell][numGhCell0-1] 		= grid.mass[iBoundCell][numGhCell0-2];
-			grid.pressure[iBoundCell][numGhCell0-1] 	= grid.pressure[iBoundCell][numGhCell0-2];
-			grid.interior[iBoundCell][numGhCell0-1] 	= grid.interior[iBoundCell][numGhCell0-2];
+			grid.mass[numGhCell1-1][iBoundCell] = grid.mass[numGhCell1-2][iBoundCell];
+			grid.pressure[numGhCell1-1][iBoundCell] = grid.pressure[numGhCell1-2][iBoundCell];
+			grid.interior[numGhCell1-1][iBoundCell] = grid.interior[numGhCell1-2][iBoundCell];
 		}
 
 		// four cells at corners
@@ -273,12 +274,67 @@ void ApplyBoundatyCondition(Grid grid, char *bc, size_t numGhCell0, size_t numGh
 				0.5 * ( grid.interior[ cornerNeigh[iCornerCell][0] ][ cornerNeigh[iCornerCell][1] ] 
 					   +grid.interior[ cornerNeigh[iCornerCell][2] ][ cornerNeigh[iCornerCell][3] ] );
 		}
-
-		
-		
 	}
 	else if (strcmp(bc, "periodic") == 0) {
-		
+		// Left boundary:
+		// ghost column 0 <- opposite interior column numGhCell0-2
+		for(size_t iBoundCell = 1; iBoundCell < numGhCell1-1; ++iBoundCell) {
+			grid.mass[iBoundCell][0] = grid.mass[iBoundCell][numGhCell0-2];
+			grid.pressure[iBoundCell][0] = grid.pressure[iBoundCell][numGhCell0-2];
+			grid.interior[iBoundCell][0] = grid.interior[iBoundCell][numGhCell0-2];
+		}
+
+
+		// Right boundary:
+		// ghost column numGhCell0-1 <- opposite interior column 1
+		for(size_t iBoundCell = 1; iBoundCell < numGhCell1-1; ++iBoundCell) {
+			grid.mass[iBoundCell][numGhCell0-1] = grid.mass[iBoundCell][1];
+			grid.pressure[iBoundCell][numGhCell0-1] = grid.pressure[iBoundCell][1];
+			grid.interior[iBoundCell][numGhCell0-1] = grid.interior[iBoundCell][1];
+		}
+
+
+		// Bottom boundary:
+		// ghost row 0 <- opposite interior row numGhCell1-2
+		for(size_t iBoundCell = 1; iBoundCell < numGhCell0-1; ++iBoundCell) {
+			grid.mass[0][iBoundCell] = grid.mass[numGhCell1-2][iBoundCell];
+			grid.pressure[0][iBoundCell] = grid.pressure[numGhCell1-2][iBoundCell];
+			grid.interior[0][iBoundCell] = grid.interior[numGhCell1-2][iBoundCell];
+		}
+
+
+		// Top boundary:
+		// ghost row numGhCell1-1 <- opposite interior row 1
+		for(size_t iBoundCell = 1; iBoundCell < numGhCell0-1; ++iBoundCell) {
+			grid.mass[numGhCell1-1][iBoundCell] = grid.mass[1][iBoundCell];
+			grid.pressure[numGhCell1-1][iBoundCell] = grid.pressure[1][iBoundCell];
+			grid.interior[numGhCell1-1][iBoundCell] = grid.interior[1][iBoundCell];
+		}
+
+
+		// Four corner ghost cells.
+		// Periodicity is applied in both x and y directions.
+
+		// (0,0) <- opposite diagonal interior cell
+		grid.mass[0][0] = grid.mass[numGhCell1-2][numGhCell0-2];
+		grid.pressure[0][0] = grid.pressure[numGhCell1-2][numGhCell0-2];
+		grid.interior[0][0] = grid.interior[numGhCell1-2][numGhCell0-2];
+
+
+		// (0, numGhCell0-1)
+		grid.mass[0][numGhCell0-1] = grid.mass[numGhCell1-2][1];
+		grid.pressure[0][numGhCell0-1] = grid.pressure[numGhCell1-2][1];
+		grid.interior[0][numGhCell0-1] = grid.interior[numGhCell1-2][1];
+
+		// (numGhCell1-1, 0)
+		grid.mass[numGhCell1-1][0] = grid.mass[1][numGhCell0-2];
+		grid.pressure[numGhCell1-1][0] = grid.pressure[1][numGhCell0-2];
+		grid.interior[numGhCell1-1][0] = grid.interior[1][numGhCell0-2];
+
+		// (numGhCell1-1, numGhCell0-1)
+		grid.mass[numGhCell1-1][numGhCell0-1] = grid.mass[1][1];
+		grid.pressure[numGhCell1-1][numGhCell0-1] = grid.pressure[1][1];
+		grid.interior[numGhCell1-1][numGhCell0-1] = grid.interior[1][1];
 	}
 	else {
 		printf("Wrong boundary condition in ApplyBoundatyCondition()\n");
