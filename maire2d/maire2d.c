@@ -1,7 +1,8 @@
 #include <stdio.h>
 
-
-
+#include "linear_algebra_2d.h"
+#include "mesh_calculation.h"
+#include "physical_calculation.h"
 
 
 int main() 
@@ -68,22 +69,23 @@ int main()
 				double length_corner  = calCornerLength(idxC, iP, meshinfo);
 				double normal_corner[2] = calCornerNormal(idxC, iP, meshinfo);
 
-				double corner_matrix = calCornerMatrix()
+				double* corner_matrix = calCornerMatrix();
 
-				attachVector(pressure_gradient, 
-					numMulVector(length_corner * pressure_cell[idxC], normal_corner));
+				// 改成先数乘再加
+				attachVector2(pressure_gradient, 
+					numMulVector2(length_corner * pressure_cell[idxC], normal_corner));
 
-				attachVector(ave_velocity_node, 
+				attachVector2(ave_velocity_node, 
 					matMulVector(corner_matrix, sp_momentum[idxC]));
 
-				attachMatrix(node_matrix, corner_matrix);
+				attachMatrix2(node_matrix, corner_matrix);
 			}
 			
-			double* node_matrix_inverse = inverseMatrix(node_matrix);
+			double* node_matrix_inverse = inverseMatrix2(node_matrix);
 
 			velocity_node[iP] = 
-				matMulVector(node_matrix_inverse, 
-							attachVector(pressure_gradient, ave_velocity_node));
+				matMulVector2(node_matrix_inverse, 
+							attachVector2(pressure_gradient, ave_velocity_node));
 		}
 		
 	
@@ -105,7 +107,7 @@ int main()
 				double normal_corner[2] = calCornerNormal(iC, idxP, meshinfo);
 				
 				sp_volume_flux += 
-					length_corner * vectorMul(normal_corner, velocity_node[idxP]);
+					length_corner * vectorMul2(normal_corner, velocity_node[idxP]);
 			}
 			sp_volume[iC] += tau * sp_volume_flux;
 		}
@@ -127,7 +129,7 @@ int main()
 			for(size_t iPC = 0; iPC < NUM_CELL_VERTEX; ++iPC) {
 				double corner_force = calCornerForce(iC, iP, meshinfo, state);
 				size_t idxP = localToGlobalNodeIdx(iC, iPC);
-				expan_power += vectorMul(corner_force, velocity_node[idxP]);
+				expan_power += vectorMul2(corner_force, velocity_node[idxP]);
 			}
 			sp_energy[iC] += - tau * expan_power;
 		}
