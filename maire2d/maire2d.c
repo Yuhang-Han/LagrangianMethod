@@ -8,6 +8,27 @@ int main()
 {
 
 /*******************
+* Model Coefficients
+*******************/
+
+	const double GAMMA = 1.4;
+
+	const double T = 1.0;
+
+	const double CFL = 0.2;
+
+	const double L = 1.0;
+	const double X0 = 2.0*L;
+	const double X1 = 2.0*L;
+
+	const size_t NUM_CELL_VERTEXS = 4;
+	const size_t NUM_NODE_NEIGH_CELLS = 4;
+
+	const size_t NUM_CELLS_1D = 10;
+	const size_t NUM_CELLS = NUM_CELLS_1D * NUM_CELLS_1D;
+	const size_t NUM_NODES = (NUM_CELLS_1D + 1) * (NUM_CELLS_1D + 1);
+
+/*******************
 * Memory Allocation
 *******************/
 
