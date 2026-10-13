@@ -28,7 +28,7 @@ void calCornerForce(double corner_force[2],
 
 	double num_viscosity[2];
 	double relative_velocity[2];
-	vecMinVec2(velociy_node, velociy_cell, relative_velocity);
+	vecSubVec2(velociy_node, velociy_cell, relative_velocity);
 
 	double matrix_corner[2][2];
 	double acous_speed_cell = sqrt(GAMMA * pressure_cell / density_cell);
@@ -38,5 +38,5 @@ void calCornerForce(double corner_force[2],
 
 	matMulVec2(matrix_corner, relative_velocity, num_viscosity);
 
-	vecMinVec2(gredient_pressure, num_viscosity, corner_force);
+	vecSubVec2(gredient_pressure, num_viscosity, corner_force);
 }
