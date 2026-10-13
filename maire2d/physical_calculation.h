@@ -1,3 +1,6 @@
+#ifndef PHYSICAL_CALCULATION_H
+#define PHYSICAL_CALCULATION_H
+
 #include "linear_algebra_2d.h"
 #include "mesh_calculation.h"
 #include <math.h>
@@ -11,3 +14,6 @@ void calCornerForce(double corner_force[2],
 					double length_corner, double normal_corner[2],
 					double velociy_node[2], 
 					double GAMMA);
+
+
+#endif
