@@ -579,9 +579,9 @@ int main()
 	const double CFL = 0.2;
 	const double CQ = 2.0;
     const double MF = 0.5;   /* tested on this 11x11 setup; 0 disables only the force */
-	const size_t OUTPUT_EVERY = 1;
+	const size_t OUTPUT_EVERY = 100;
 
-	const double L = 0.2;
+	const double L = 1.0;
 	const double X0 = 2.0*L;
 	const double X1 = 2.0*L;
 
