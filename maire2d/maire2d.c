@@ -37,7 +37,14 @@ int main()
 /*******************
 * Memory Allocation
 *******************/
+	double coor_node[NUM_NODES][2];
+	double velocity_node[NUM_NODES][2];
 
+	double density_cell[NUM_CELLS];
+	double pressure_cell[NUM_CELLS];
+	double sp_volume_cell[NUM_CELLS];
+	double sp_momentum_cell[NUM_CELLS][2];
+	double sp_energy_cell[NUM_CELLS];
 
 
 
@@ -51,17 +58,16 @@ int main()
 * Time Advancing
 *********************/
 
+	double t = 0.0;
 
-
-// Update
 	while (t < T) {
-		// apply boundary condition
+		// Apply boundary condition
 		
 		// Calculate time step length: tau
 			double tau = 1e-4;
 
 
-		// update node velocity
+		// Update node velocity
 		for(size_t iP = 0; iP < NUM_NODES; ++iP) {
 			double pressure_gradient[2] = {0,};
 			double ave_velocity_node[2] = {0,};
@@ -70,19 +76,18 @@ int main()
 			
 			for(size_t iCP = 0; iCP < NUM_NODE_NEIGH_CELLS; ++iCP) {
 				// transform local cell idx to global
-				size_t idxC = localToGlobalCellIdx(iP, iCP,
-									NUM_NODES_X, NUM_CELLS_X);
+				size_t idxC = localToGlobalCellIdx(iP, iCP, NUM_NODES_X, NUM_CELLS_X);
 				// calculate corner length and normal by neigh nodes
 
-				size_t idxPl = calNeighVertexIdx(iP, idxC,  1, 
-												NUM_NODES_X, NUM_CELLS_X);
-				size_t idxPr = calNeighVertexIdx(iP, idxC, -1, 
-												NUM_NODES_X, NUM_CELLS_X);
+				size_t idxPl = calNeighVertexIdx(iP, idxC,  1, NUM_NODES_X, NUM_CELLS_X);
+				size_t idxPr = calNeighVertexIdx(iP, idxC, -1, NUM_NODES_X, NUM_CELLS_X);
+
 				double length_corner  = calCornerLength(coor_node[iP], 
 											coor_node[idxPl], coor_node[idxPr]);
 	
 				double normal_corner[2];
-				calCornerNormal(coor_node[iP], coor_pl, coor_pr, normal_corner);
+				calCornerNormal(coor_node[iP], coor_node[idxPl], coor_node[idxPr],
+								normal_corner);
 
 				double impendance = calImpendance(density_cell[idxC], 
 												  pressure_cell[idxC], GAMMA);
@@ -113,7 +118,7 @@ int main()
 		}
 		
 	
-		// update node position
+		// Update node position
 		for(size_t iP = 0; iP < NUM_NODES; ++iP) {
 			// update a 2d vector: x_p += u_p * tau
 			double position_update[2];
@@ -122,100 +127,57 @@ int main()
 		}
 
 
-		// update cell specific volume
+		// Update cell specific volume
+		//		 	   specific momentum
+		//			   specific total energy
 		for(size_t iC = 0; iC < NUM_CELLS; ++iC) {
 			double sp_volume_flux = 0;
+			double resul_force[2] = {0,};
+			double expan_power = 0;
+
+			
 			// sum on cell vertexs
 			for(size_t iPC = 0; iPC < NUM_CELL_VERTEXS; ++iPC) {
 				// transform local node idx to global
-				size_t idxP = localToGlobalNodeIdx(iC, iPC, 
-										NUM_NODES_X, NUM_CELLS_X);
-										
-				size_t idxPl = calNeighVertexIdx(idxP, iC,  1, 
-												NUM_NODES_X, NUM_CELLS_X);
-				size_t idxPr = calNeighVertexIdx(idxP, iC, -1, 
-												NUM_NODES_X, NUM_CELLS_X);
+				size_t idxP = localToGlobalNodeIdx(iC, iPC, NUM_NODES_X, NUM_CELLS_X);
+				size_t idxPl = calNeighVertexIdx(idxP, iC,  1, NUM_NODES_X, NUM_CELLS_X);
+				size_t idxPr = calNeighVertexIdx(idxP, iC, -1, NUM_NODES_X, NUM_CELLS_X);
+
 				double length_corner  = calCornerLength(coor_node[idxP], 
 											coor_node[idxPl], coor_node[idxPr]);
 														
 				double normal_corner[2];
-				calCornerNormal(coor_node[idxP], coor_pl, coor_pr, normal_corner);
-
-				double velocity_component = 
-						vecMulVec2(normal_corner, velocity_node[idxP]);
-				sp_volume_flux += length_corner * velocity_component;
-			}
-			sp_volume_cell[iC] += tau * sp_volume_flux;
-		}
-
-
-		// update cell specific momentum
-		for(size_t iC = 0; iC < NUM_CELLS; ++iC) {
-			double resul_force[2] = {0,};
-			for(size_t iPC = 0; iPC < NUM_CELL_VERTEXS; ++iPC) {
-
-				size_t idxP = localToGlobalNodeIdx(iC, iPC, 
-										NUM_NODES_X, NUM_CELLS_X);
-										
-				size_t idxPl = calNeighVertexIdx(idxP, iC,  1, 
-												NUM_NODES_X, NUM_CELLS_X);
-				size_t idxPr = calNeighVertexIdx(idxP, iC, -1, 
-												NUM_NODES_X, NUM_CELLS_X);
-				double length_corner  = calCornerLength(coor_node[idxP], 
-											coor_node[idxPl], coor_node[idxPr]);
-														
-				double normal_corner[2];
-				calCornerNormal(coor_node[idxP], coor_pl, coor_pr, normal_corner);
+				calCornerNormal(coor_node[idxP], coor_node[idxPl], coor_node[idxPr], 
+								normal_corner);
 
 				double impendance = calImpendance(density_cell[iC], 
 												pressure_cell[iC], GAMMA);
 				double corner_force[2];
-				calCornerForce(corner_force, sp_momentum_cell[iC], 
-								pressure_cell[iC], impendance,
+				calCornerForce(corner_force, impendance,
+								sp_momentum_cell[iC], pressure_cell[iC], 
 								length_corner, normal_corner,
-								velociy_node[idxP]);
-									
+								velocity_node[idxP]);
+
+				/**********************************/
+
+				double velocity_component = 
+								vecMulVec2(normal_corner, velocity_node[idxP]);
+				sp_volume_flux += length_corner * velocity_component;
+
 				attVec2(resul_force, corner_force);
-				
+
+				expan_power += vecMulVec2(corner_force, velocity_node[idxP]);
 			}
+
+			// update
+			sp_volume_cell[iC] += tau * sp_volume_flux;
 
 			double contrib_sp_momentum[2];
 			numMulVec2(-tau, resul_force, contrib_sp_momentum);
 			attVec2(sp_momentum_cell[iC], contrib_sp_momentum);
-		}
 
-
-		// update cell specific total energy
-		for(size_t iC = 0; iC < NUM_CELLS; ++iC) {
-			double expan_power = 0;
-			for(size_t iPC = 0; iPC < NUM_CELL_VERTEXS; ++iPC) {
-				size_t idxP = localToGlobalNodeIdx(iC, iPC, 
-										NUM_NODES_X, NUM_CELLS_X);
-										
-				size_t idxPl = calNeighVertexIdx(idxP, iC,  1, 
-												NUM_NODES_X, NUM_CELLS_X);
-				size_t idxPr = calNeighVertexIdx(idxP, iC, -1, 
-												NUM_NODES_X, NUM_CELLS_X);
-				double length_corner  = calCornerLength(coor_node[idxP], 
-											coor_node[idxPl], coor_node[idxPr]);
-														
-				double normal_corner[2];
-				calCornerNormal(coor_node[idxP], coor_pl, coor_pr, normal_corner);
-
-				double impendance = calImpendance(density_cell[iC], 
-												pressure_cell[iC], GAMMA);
-				double corner_force[2];
-				calCornerForce(corner_force, sp_momentum_cell[iC], 
-								pressure_cell[iC], impendance,
-								length_corner, normal_corner,
-								velociy_node[idxP]);
-				
-				expan_power += vecMulVec2(corner_force, velocity_node[idxP]);
-			}
 			sp_energy_cell[iC] += - tau * expan_power;
 		}
-
-		
 	}
 
 
