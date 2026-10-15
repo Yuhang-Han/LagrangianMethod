@@ -3,6 +3,8 @@
 #include "linear_algebra_2d.h"
 #include "mesh_calculation.h"
 
+
+
 // WARNING: This function does not contain coundary safty check.
 size_t localToGlobalCellIdx(size_t idxP, size_t idxCP, 
 							size_t NUM_NODES_X, size_t NUM_CELLS_X) 
@@ -35,7 +37,7 @@ size_t localToGlobalCellIdx(size_t idxP, size_t idxCP,
 size_t localToGlobalNodeIdx(size_t idxC, size_t idxPC, 
 							size_t NUM_NODES_X, size_t NUM_CELLS_X) 
 {
-	//printf("idxC, idxPC: %zu, %zu\n", idxC, idxPC);
+	printf("idxC, idxPC: %zu, %zu\n", idxC, idxPC);
 	
 	// locate the cell C
 	size_t row_cell = idxC / NUM_CELLS_X;
@@ -58,6 +60,67 @@ size_t localToGlobalNodeIdx(size_t idxC, size_t idxPC,
 
 	return idxP;
 }
+
+
+size_t globalToLocalNodeIdx(size_t idxC, size_t idxP, 
+							size_t NUM_NODES_X, size_t NUM_CELLS_X) 
+{
+	//printf("idxC, idxPC: %zu, %zu\n", idxC, idxPC);
+	
+	// locate the cell C
+	size_t row_cell = idxC / NUM_CELLS_X;
+	size_t col_cell = idxC % NUM_CELLS_X;
+
+	// locate the node P
+	size_t row_node = idxP / NUM_NODES_X;
+	size_t col_node = idxP % NUM_NODES_X;
+
+	//printf("row_cell, col_cell: %zu, %zu\n", row_cell, col_cell);
+
+
+	//printf("row_base, col_base: %zu, %zu\n", row_base, col_base);
+
+	size_t row_vertex = row_node - row_cell;
+	size_t col_vertex = col_node - col_cell;
+
+	//printf("row_node, col_node: %zu, %zu\n", row_node, col_node);
+
+	size_t idxPC = row_vertex * 2 + col_vertex;
+
+	return idxPC;
+}
+
+
+size_t calNeighVertexIdx(size_t idxP, size_t idxC, int direction,
+						 size_t NUM_NODES_X, size_t NUM_CELLS_X)
+{
+	size_t idxPC = globalToLocalNodeIdx(idxC, idxP, NUM_NODES_X, NUM_CELLS_X);
+
+	size_t vertex_book[4] = {0, 1, 3, 2};
+
+	int order_node = 0;
+	for (int i = 0; i < 4; ++i) {
+		if (vertex_book[i] == idxPC)
+			order_node = i;
+	}
+
+	size_t idxPC_neigh = vertex_book[(order_node + direction + 4) % 4];
+
+	return localToGlobalNodeIdx(idxC, idxPC_neigh, NUM_NODES_X, NUM_CELLS_X);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 double calCornerLength(double coor_p[2], double coor_pl[2], double coor_pr[2])

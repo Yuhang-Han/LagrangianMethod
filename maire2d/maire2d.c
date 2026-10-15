@@ -74,12 +74,13 @@ int main()
 									NUM_NODES_X, NUM_CELLS_X);
 				// calculate corner length and normal by neigh nodes
 
-				double coor_pl[2], coor_pr[2];
-				calNeighVertexCoor(iP, idxC, -1, coor_pl);
-				calNeighVertexCoor(iP, idxC,  1, coor_pr);
+				size_t idxPl = calNeighVertexIdx(iP, idxC,  1, 
+												NUM_NODES_X, NUM_CELLS_X);
+				size_t idxPr = calNeighVertexIdx(iP, idxC, -1, 
+												NUM_NODES_X, NUM_CELLS_X);
 				double length_corner  = calCornerLength(coor_node[iP], 
-														coor_pl, coor_pr);
-				
+											coor_node[idxPl], coor_node[idxPr]);
+	
 				double normal_corner[2];
 				calCornerNormal(coor_node[iP], coor_pl, coor_pr, normal_corner);
 
@@ -130,11 +131,12 @@ int main()
 				size_t idxP = localToGlobalNodeIdx(iC, iPC, 
 										NUM_NODES_X, NUM_CELLS_X);
 										
-				double coor_pl[2], coor_pr[2];
-				calNeighVertexCoor(idxP, iC, -1, coor_pl);
-				calNeighVertexCoor(idxP, iC,  1, coor_pr);
+				size_t idxPl = calNeighVertexIdx(idxP, iC,  1, 
+												NUM_NODES_X, NUM_CELLS_X);
+				size_t idxPr = calNeighVertexIdx(idxP, iC, -1, 
+												NUM_NODES_X, NUM_CELLS_X);
 				double length_corner  = calCornerLength(coor_node[idxP], 
-														coor_pl, coor_pr);
+											coor_node[idxPl], coor_node[idxPr]);
 														
 				double normal_corner[2];
 				calCornerNormal(coor_node[idxP], coor_pl, coor_pr, normal_corner);
@@ -155,11 +157,12 @@ int main()
 				size_t idxP = localToGlobalNodeIdx(iC, iPC, 
 										NUM_NODES_X, NUM_CELLS_X);
 										
-				double coor_pl[2], coor_pr[2];
-				calNeighVertexCoor(idxP, iC, -1, coor_pl);
-				calNeighVertexCoor(idxP, iC,  1, coor_pr);
+				size_t idxPl = calNeighVertexIdx(idxP, iC,  1, 
+												NUM_NODES_X, NUM_CELLS_X);
+				size_t idxPr = calNeighVertexIdx(idxP, iC, -1, 
+												NUM_NODES_X, NUM_CELLS_X);
 				double length_corner  = calCornerLength(coor_node[idxP], 
-														coor_pl, coor_pr);
+											coor_node[idxPl], coor_node[idxPr]);
 														
 				double normal_corner[2];
 				calCornerNormal(coor_node[idxP], coor_pl, coor_pr, normal_corner);
@@ -189,11 +192,12 @@ int main()
 				size_t idxP = localToGlobalNodeIdx(iC, iPC, 
 										NUM_NODES_X, NUM_CELLS_X);
 										
-				double coor_pl[2], coor_pr[2];
-				calNeighVertexCoor(idxP, iC, -1, coor_pl);
-				calNeighVertexCoor(idxP, iC,  1, coor_pr);
+				size_t idxPl = calNeighVertexIdx(idxP, iC,  1, 
+												NUM_NODES_X, NUM_CELLS_X);
+				size_t idxPr = calNeighVertexIdx(idxP, iC, -1, 
+												NUM_NODES_X, NUM_CELLS_X);
 				double length_corner  = calCornerLength(coor_node[idxP], 
-														coor_pl, coor_pr);
+											coor_node[idxPl], coor_node[idxPr]);
 														
 				double normal_corner[2];
 				calCornerNormal(coor_node[idxP], coor_pl, coor_pr, normal_corner);
