@@ -3,11 +3,12 @@
 #include "linear_algebra_2d.h"
 #include "mesh_calculation.h"
 #include "physical_calculation.h"
+#include "initial_bound_condition.h"
 
-// 先写函数再声明变量
-// 矩阵换成二维数组, 不用指针
+// 初始化, 可参考SGH
+// 处理边界条件, 区分虚拟单元
 
-// 顺一遍主函数, 匹配函数定义, 补充没定义的函数
+// 结果输出
 
 int main() 
 {
@@ -22,17 +23,18 @@ int main()
 
 	const double CFL = 0.2;
 
-	const double L = 1.0;
-	const double X0 = 2.0*L;
-	const double X1 = 2.0*L;
+	const double L0 = 1.0;
+	const double L1 = 1.0;
 
 	const size_t NUM_CELL_VERTEXS = 4;
 	const size_t NUM_NODE_NEIGH_CELLS = 4;
 
 	const size_t NUM_CELLS_X = 10;
+	const size_t NUM_CELLS_Y = 10;
 	const size_t NUM_NODES_X = NUM_CELLS_X + 1;
-	const size_t NUM_CELLS = NUM_CELLS_X * NUM_CELLS_X;
-	const size_t NUM_NODES = NUM_NODES_X * NUM_NODES_X;
+	const size_t NUM_NODES_Y = NUM_CELLS_Y + 1;
+	const size_t NUM_CELLS = NUM_CELLS_X * NUM_CELLS_Y;
+	const size_t NUM_NODES = NUM_NODES_X * NUM_NODES_Y;
 
 /*******************
 * Memory Allocation
@@ -40,11 +42,12 @@ int main()
 	double coor_node[NUM_NODES][2];
 	double velocity_node[NUM_NODES][2];
 
+	double mass_cell[NUM_CELLS];
 	double density_cell[NUM_CELLS];
 	double pressure_cell[NUM_CELLS];
-	double sp_volume_cell[NUM_CELLS];
-	double sp_momentum_cell[NUM_CELLS][2];
+	double volume_cell[NUM_CELLS];
 	double sp_energy_cell[NUM_CELLS];
+	double sp_momentum_cell[NUM_CELLS][2];
 
 
 
@@ -52,6 +55,31 @@ int main()
 * Initialization
 *******************/
 
+	// (uniform) Grid geometry
+	double cell_h_0 = L0 / NUM_CELLS_X;
+	double cell_h_1 = L1 / NUM_CELLS_Y;
+
+	for(size_t iP = 0; iP < NUM_NODES; ++iP) {
+		initializeNodeCoor(iP, NUM_NODES_X, cell_h_0, cell_h_1, coor_node[iP]);
+	}
+
+	
+	// assign density, velocity, pressure, and get the others
+	for(size_t iC = 0; iC < NUM_CELLS; ++iC) {
+
+		volume_cell[iC]  = initializeCellVolume(cell_h_0, cell_h_1);
+		density_cell[iC] = initializeCellDensity();
+		mass_cell[iC] 	 = initializeCellMass(volume_cell[iC], density_cell[iC]);
+
+		initializeCellSpMomentum(sp_momentum_cell[iC]);
+
+		pressure_cell[iC] = initializeCellPresure(coor_node[2], GAMMA);
+
+		sp_energy_cell[iC] = initializeCellSpEnergy(density_cell[iC],
+								sp_momentum_cell[iC], pressure_cell[iC], GAMMA);
+	}
+
+	// we don't initialize veolicty_node
 
 
 /********************
@@ -62,6 +90,8 @@ int main()
 
 	while (t < T) {
 		// Apply boundary condition
+
+		
 		
 		// Calculate time step length: tau
 			double tau = 1e-4;
@@ -131,12 +161,12 @@ int main()
 		//		 	   specific momentum
 		//			   specific total energy
 		for(size_t iC = 0; iC < NUM_CELLS; ++iC) {
-			double sp_volume_flux = 0;
+			double volume_flux = 0;
 			double resul_force[2] = {0,};
 			double expan_power = 0;
 
 			
-			// sum on cell vertexs
+			// sum contributes on cell vertexs
 			for(size_t iPC = 0; iPC < NUM_CELL_VERTEXS; ++iPC) {
 				// transform local node idx to global
 				size_t idxP = localToGlobalNodeIdx(iC, iPC, NUM_NODES_X, NUM_CELLS_X);
@@ -162,7 +192,7 @@ int main()
 
 				double velocity_component = 
 								vecMulVec2(normal_corner, velocity_node[idxP]);
-				sp_volume_flux += length_corner * velocity_component;
+				volume_flux += length_corner * velocity_component;
 
 				attVec2(resul_force, corner_force);
 
@@ -170,13 +200,13 @@ int main()
 			}
 
 			// update
-			sp_volume_cell[iC] += tau * sp_volume_flux;
+			volume_cell[iC] += tau * volume_flux / mass_cell[iC];
 
 			double contrib_sp_momentum[2];
-			numMulVec2(-tau, resul_force, contrib_sp_momentum);
+			numMulVec2(-tau/mass_cell[iC], resul_force, contrib_sp_momentum);
 			attVec2(sp_momentum_cell[iC], contrib_sp_momentum);
 
-			sp_energy_cell[iC] += - tau * expan_power;
+			sp_energy_cell[iC] += - tau * expan_power / mass_cell[iC];
 		}
 	}
 

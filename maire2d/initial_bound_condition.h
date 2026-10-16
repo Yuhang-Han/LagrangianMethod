@@ -1,0 +1,17 @@
+#include <stddef.h>
+
+
+void initializeNodeCoor(size_t idxP, size_t num_nodes_x, 
+						double cell_h_0, double cell_h_1,
+						double coor_node[2]);
+
+double initializeCellVolume(double cell_h_0, double cell_h_1);
+double initializeCellDensity();
+double initializeCellMass(double volume_cell, double density_cell);
+
+void initializeCellSpMomentum(double sp_momentum_cell[2]);
+
+double initializeCellPresure(double coor_node[2], double GAMMA);
+
+double initializeCellSpEnergy(double density_cell, double sp_momentum_cell[2], 
+							  double pressure_cell, double GAMMA);
