@@ -15,3 +15,11 @@ double initializeCellPresure(double coor_node[2], double GAMMA);
 
 double initializeCellSpEnergy(double density_cell, double sp_momentum_cell[2], 
 							  double pressure_cell, double GAMMA);
+
+double boundarilizeMass(double cell_h_0, double cell_h_1);
+double boundarilizeDensity();
+double boundarilizePressure();
+double boundarilizeVolume(double cell_h_0, double cell_h_1);
+double boundarilizeSpEnergy(double GAMMA);
+
+void boundarilizeSpMomentum(double sp_momentum_cell[2]);

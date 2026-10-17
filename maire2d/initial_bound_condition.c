@@ -4,7 +4,7 @@
 * domain: [0,1]^2
 * explosion center: (0.5, 0.5)
 *
-*
+* boundary: constant 
 ******************************/
 
 #include <math.h>
@@ -85,4 +85,42 @@ double initializeCellSpEnergy(double density_cell, double sp_momentum_cell[2],
 						+ 0.5 * calNorm2(sp_momentum_cell);
 
 	return sp_total_energy;
+}
+
+
+
+double boundarilizeMass(double cell_h_0, double cell_h_1)
+{
+	return cell_h_0 * cell_h_1 * 1.;
+}
+
+double boundarilizeDensity()
+{
+	return 1.;
+}
+	
+	
+double boundarilizePressure()
+{
+	return AMBIENT_PRESSURE;
+}
+	
+	
+double boundarilizeVolume(double cell_h_0, double cell_h_1)
+{
+	return cell_h_0 * cell_h_1;
+}
+
+double boundarilizeSpEnergy(double GAMMA) 
+{
+	double interior = AMBIENT_PRESSURE / (GAMMA - 1) / 1.;
+	double sp_total_energy = interior + 0.;
+
+	return sp_total_energy;
+}
+
+void boundarilizeSpMomentum(double sp_momentum_cell[2]) 
+{
+	sp_momentum_cell[0] = 0.;
+	sp_momentum_cell[1] = 0.;
 }
