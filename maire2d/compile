@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+gcc \
+linear_algebra_2d.c \
+mesh_calculation.c \
+physical_calculation.c \
+initial_bound_condition.c \
+data_output.c \
+maire2d.c \
+-o build/maire2d \
+-lm

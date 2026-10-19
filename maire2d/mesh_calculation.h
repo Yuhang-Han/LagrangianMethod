@@ -8,7 +8,8 @@
 
 
 void categorizeNodes(const size_t NUM_GHOST_NODES_X, const size_t NUM_GHOST_NODES_Y, 
-					 const size_t NUM_NODES, size_t NODE_DIC[NUM_NODES]);
+ 					 const size_t NUM_NODES, const size_t NUM_BOUND_NODES,
+ 					 size_t NODE_DIC[NUM_NODES], size_t BOUND_NODE_DIC[NUM_BOUND_NODES]);
 					 
 void categorizeCells(const size_t NUM_GHOST_CELLS_X, const size_t NUM_GHOST_CELLS_Y, 
 					 const size_t NUM_CELLS, const size_t NUM_BOUND_CELLS,

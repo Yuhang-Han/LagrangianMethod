@@ -22,7 +22,7 @@ void vecAddVec2(double vector1[2], double vector2[2], double result_vector[2])
 	result_vector[1] = vector1[1] + vector2[1];
 }
 
-void vecSubVec2(double vector1[2], double vector2[2], double result_vector[2])
+void vecSubVec2(double vector1[2], const double vector2[2], double result_vector[2])
 {
 	result_vector[0] = vector1[0] - vector2[0];
 	result_vector[1] = vector1[1] - vector2[1];
@@ -85,12 +85,12 @@ void calRHNormal2(double vector[2], double normal[2])
 }
 
 
-void inverseMatrix2(double matrix[][2])
+void inverseMatrix2(double matrix[][2], double result_matrix[][2])
 {
 	double det = matrix[0][0] * matrix[1][1] \
 				- matrix[0][1] * matrix[1][0];
 	double matrix_tmp[2][2] = { {matrix[1][1], -matrix[0][1]},
 								{-matrix[1][0], matrix[0][0]} };
 
-	numMulMat2(1.0/det, matrix_tmp, matrix);
+	numMulMat2(1.0/det, matrix_tmp, result_matrix);
 }

@@ -23,3 +23,7 @@ double boundarilizeVolume(double cell_h_0, double cell_h_1);
 double boundarilizeSpEnergy(double GAMMA);
 
 void boundarilizeSpMomentum(double sp_momentum_cell[2]);
+
+void boundarilizeCoor(size_t idxP, size_t num_nodes_x, 
+						double cell_h_0, double cell_h_1,
+						double coor_node[2]);

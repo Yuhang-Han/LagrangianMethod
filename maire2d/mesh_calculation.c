@@ -4,18 +4,27 @@
 #include "mesh_calculation.h"
 
 void categorizeNodes(const size_t NUM_GHOST_NODES_X, const size_t NUM_GHOST_NODES_Y, 
-					 const size_t NUM_NODES, size_t NODE_DIC[NUM_NODES])
+					 const size_t NUM_NODES, const size_t NUM_BOUND_NODES,
+					 size_t NODE_DIC[NUM_NODES], size_t BOUND_NODE_DIC[NUM_BOUND_NODES])
 {
 	size_t num_ghost_nodes = NUM_GHOST_NODES_X * NUM_GHOST_NODES_Y;
 	size_t iNode = 0;
+	size_t iBound = 0;
 	
 	for(size_t iP = 0; iP < num_ghost_nodes; ++iP) {
 		size_t row_node = iP / NUM_GHOST_NODES_X;
 		size_t col_node	= iP % NUM_GHOST_NODES_Y;
 
-		if ( (row_node != 0) && (col_node != 0)
-			&& (row_node != NUM_GHOST_NODES_Y - 1)
-			&& (col_node != NUM_GHOST_NODES_X - 1) )
+		if ( (row_node == 0) || (col_node == 0)
+			|| (row_node == NUM_GHOST_NODES_Y - 1)
+			|| (col_node == NUM_GHOST_NODES_X - 1) )
+		{
+			//printf("iC: %zu (%zu, %zu) is %zu th bound node\n", 
+			//		iC, row_node, col_node, iBound);
+			BOUND_NODE_DIC[iBound] = iP;
+			++iBound;
+		}
+		else
 		{
 			NODE_DIC[iNode] = iP;
 			++iNode;
@@ -37,10 +46,12 @@ void categorizeCells(const size_t NUM_GHOST_CELLS_X, const size_t NUM_GHOST_CELL
 		size_t row_cell = iC / NUM_GHOST_CELLS_X;
 		size_t col_cell = iC % NUM_GHOST_CELLS_Y;
 
-		if ( (row_cell = 0) || (col_cell = 0)
-			|| (row_cell != NUM_GHOST_CELLS_Y - 1)
-			|| (col_cell != NUM_GHOST_CELLS_X - 1) )
+		if ( (row_cell == 0) || (col_cell == 0)
+			|| (row_cell == NUM_GHOST_CELLS_Y - 1)
+			|| (col_cell == NUM_GHOST_CELLS_X - 1) )
 		{
+			//printf("iC: %zu (%zu, %zu) is %zu th bound cell\n", 
+			//		iC, row_cell, col_cell, iBound);
 			BOUND_CELL_DIC[iBound] = iC;
 			++iBound;
 		}
@@ -50,6 +61,7 @@ void categorizeCells(const size_t NUM_GHOST_CELLS_X, const size_t NUM_GHOST_CELL
 			++iCell;
 		}
 	}
+
 }
 
 
@@ -85,7 +97,7 @@ size_t localToGlobalCellIdx(size_t iP, size_t iCP,
 size_t localToGlobalNodeIdx(size_t iC, size_t iPC, 
 							size_t NUM_NODES_X, size_t NUM_CELLS_X) 
 {
-	printf("iC, iPC: %zu, %zu\n", iC, iPC);
+	//printf("iC, iPC: %zu, %zu\n", iC, iPC);
 	
 	// locate the cell C
 	size_t row_cell = iC / NUM_CELLS_X;
