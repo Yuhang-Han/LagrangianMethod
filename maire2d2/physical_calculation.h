@@ -15,5 +15,8 @@ void calCornerForce(double corner_force[2], double impendance,
 					double length_corner,   double normal_corner[2],
 					double velociy_node[2]);
 
+double calCellDensity(double volume_cell , double mass_cell);
+double calCellSpInterior(double sp_energy_cell, double sp_momentum_cell[2]);
+double calCellPressure(double density_cell, double internal_energy, double GAMMA);
 
 #endif

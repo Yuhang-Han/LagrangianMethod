@@ -48,3 +48,21 @@ void calCornerForce(double corner_force[2], double impendance,
 
 	vecSubVec2(gredient_pressure, num_viscosity, corner_force);
 }
+
+
+
+
+double calCellDensity(double volume_cell , double mass_cell)
+{
+	return mass_cell / volume_cell;
+}
+
+double calCellSpInterior(double sp_energy_cell, double sp_momentum_cell[2])
+{
+	return sp_energy_cell - 0.5 * pow(calNorm2(sp_momentum_cell), 2);
+}
+
+double calCellPressure(double density_cell, double internal_energy, double GAMMA)
+{
+	return density_cell * (GAMMA-1) * internal_energy;
+}

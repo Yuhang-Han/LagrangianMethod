@@ -250,6 +250,8 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 		// Update cell volume
 		//		 	   specific momentum
 		//			   specific total energy
+		// and sync    density
+		//			   pressure
 		for(size_t iCy = START_CELL_Y; iCy <= END_CELL_Y; ++iCy) {
 			for(size_t iCx = START_CELL_X; iCx <= END_CELL_X; ++iCx) {
 				double volume_flux = 0;
@@ -312,6 +314,16 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 
 				sp_energy_cell[iCy][iCx] += - tau * expan_power \
 												/ mass_cell[iCy][iCx];
+
+
+
+				// sync density and pressure
+				density_cell[iCy][iCx] = calCellDensity(volume_cell[iCy][iCx],
+														mass_cell[iCy][iCx]);
+				double sp_interior = calCellSpInterior(sp_energy_cell[iCy][iCx],
+													  sp_momentum_cell[iCy][iCx]);
+				pressure_cell[iCy][iCx] = calCellPressure(density_cell[iCy][iCx],
+														  sp_interior, GAMMA);
 			}
 		}
 
