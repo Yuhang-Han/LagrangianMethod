@@ -6,6 +6,13 @@
 #include "initial_bound_condition.h"
 #include "data_output.h"
 
+double getDoubleMin(double a, double b) {
+	if(a < b)
+		return a;
+	else 
+		return b;
+}
+
 
 int main() 
 {
@@ -20,7 +27,8 @@ int main()
 
 	const double T = 1.0;
 
-	const double CFL = 0.2;
+	const double CFL_E = 0.25;
+	const double CFL_V = 0.1;
 
 	const double L0 = 1.0;
 	const double L1 = 1.0;
@@ -139,7 +147,7 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 	size_t time_step = 0;
 
 	while (t < T) {
-		// Apply boundary condition
+	// Apply boundary condition
 		for(size_t iCy = START_TOTAL_CELL_Y; iCy <= END_TOTAL_CELL_Y; ++iCy) {
 			for(size_t iCx = START_TOTAL_CELL_X; iCx <= END_TOTAL_CELL_X; ++iCx) {
 				if (iCx >= START_CELL_X && iCx <= END_CELL_X &&
@@ -169,13 +177,72 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 		}
 		
 
-		// Calculate time step length: tau
-			double tau = 1e-3;
-			t += tau;
-			++time_step;
+	// Time step criterion on the volume variation
+		double tau_e = T - t;
+		double tau_c = T - t;
+
+		for(size_t iCy = START_TOTAL_CELL_Y; iCy <= END_TOTAL_CELL_Y; ++iCy) {
+			for(size_t iCx = START_TOTAL_CELL_X; iCx <= END_TOTAL_CELL_X; ++iCx) {
+
+				double impendance = calImpendance(density_cell[iCy][iCx],
+												  pressure_cell[iCy][iCx],
+												  GAMMA);
+
+				double width_cell_approx = L0 + L1;
+				double volume_flux = 0.;
+				for(size_t iPy = iCy; iPy <= iCy + 1; ++iPy) {
+					for(size_t iPx = iCx; iPx <= iCx + 1; ++iPx) {
+						size_t node_next_x, node_next_y;
+						size_t node_prev_x, node_prev_y;
+						calNeighVertexIdx(iPx, iPy, iCx, iCy, 1,
+						                  &node_next_x, &node_next_y);
+						calNeighVertexIdx(iPx, iPy, iCx, iCy, -1,
+						                  &node_prev_x, &node_prev_y);
+
+						double length_corner  = \
+								calCornerLength(coor_node[iPy][iPx],
+												coor_node[node_next_y][node_next_x], 
+												coor_node[node_prev_y][node_prev_x]);
+
+						double normal_corner[2];
+						calCornerNormal(coor_node[iPy][iPx], 
+										coor_node[node_next_y][node_next_x], 
+										coor_node[node_prev_y][node_prev_x],
+										normal_corner);
+
+						double corner_force[2];
+						calCornerForce(corner_force, impendance,
+										sp_momentum_cell[iCy][iCx], 
+										pressure_cell[iCy][iCx],
+										length_corner, normal_corner,
+										velocity_node[iPy][iPx]);
+
+						/**********************************/
+
+						double velocity_component =
+									vecMulVec2(normal_corner, 
+												velocity_node[iPy][iPx]);
+						volume_flux += length_corner * velocity_component;
+
+						width_cell_approx = getDoubleMin(length_corner, 
+														 width_cell_approx);
+					}
+				}
+				double tau_e_cell = CFL_E * width_cell_approx / impendance;
+				tau_e = getDoubleMin(tau_e_cell, tau_e);
+
+				double tau_c_cell = CFL_V * volume_cell[iCy][iCx] 
+									/ fabs(volume_flux);
+				tau_c = getDoubleMin(tau_c_cell, tau_c);
+			}
+		}
+
+		double tau = getDoubleMin(tau_e, tau_c);
+		t += tau;
+		++time_step;
 
 
-		// Update node velocity
+	// Update node velocity
 		for(size_t iPy = START_NODE_Y; iPy <= END_NODE_Y; ++iPy) {
 			for(size_t iPx = START_NODE_X; iPx <= END_NODE_X; ++iPx) {
 				double pressure_gradient[2] = {0,};
@@ -236,7 +303,7 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 		}
 		
 	
-		// Update node position
+	// Update node position
 		for(size_t iPy = START_NODE_Y; iPy <= END_NODE_Y; ++iPy) {
 			for(size_t iPx = START_NODE_X; iPx <= END_NODE_X; ++iPx) {
 				// update a 2d vector: x_p += u_p * tau
@@ -247,11 +314,11 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 		}
 
 
-		// Update cell volume
-		//		 	   specific momentum
-		//			   specific total energy
-		// and sync    density
-		//			   pressure
+	// Update cell volume
+	//		 	   specific momentum
+	//			   specific total energy
+	// and sync    density
+	//			   pressure
 		for(size_t iCy = START_CELL_Y; iCy <= END_CELL_Y; ++iCy) {
 			for(size_t iCx = START_CELL_X; iCx <= END_CELL_X; ++iCx) {
 				double volume_flux = 0;
@@ -327,6 +394,8 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 			}
 		}
 
+	
+	// Put out the data
 		if (time_step / OUTPUT_FREQUNCY == 0)
 			putOutNodeCoor(t, NUM_TOTAL_NODES_X, NUM_TOTAL_NODES_Y,
 						   START_NODE_X, END_NODE_X, START_NODE_Y, END_NODE_Y, 
