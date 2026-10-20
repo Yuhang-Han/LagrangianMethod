@@ -22,7 +22,7 @@ int main()
 *******************/
 	const double EPS = 1e-10;
 
-	const size_t OUTPUT_FREQUNCY = 10;
+	const size_t OUTPUT_FREQUNCY = 100;
 
 	const double GAMMA = 1.4;
 
@@ -34,8 +34,8 @@ int main()
 	const double L0 = 1.0;
 	const double L1 = 1.0;
 
-	const size_t NUM_CELLS_X = 100;
-	const size_t NUM_CELLS_Y = 100;
+	const size_t NUM_CELLS_X = 20;
+	const size_t NUM_CELLS_Y = 20;
 	const size_t NUM_CELLS = NUM_CELLS_X * NUM_CELLS_Y;
 	
 	const size_t NUM_NODES_X = NUM_CELLS_X + 1;
@@ -299,23 +299,8 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 						double velocity_component =
 									vecMulVec2(normal_corner, 
 												velocity_node[iPy][iPx]);
-						// if(isnan(velocity_component)) {
-						// 	printf("\n WARNING: Get NAN in velocity_component!\n");
-						// 	printf("corner normal: (%f, %f)\n", 
-						// 			normal_corner[0], normal_corner[1]);
-						// 	printf("velocity_node: (%f, %f)\n", 
-						// 			velocity_node[iPy][iPx][0], 
-						// 			velocity_node[iPy][iPx][1]);
-						// }
 
-						
 						volume_flux += length_corner * velocity_component;
-
-						// if(isnan(volume_flux)) {
-						// 	printf("\n WARNING: Get NAN in volumeflux!\n");
-						// 	printf("length_corner: %f\n", length_corner);
-						// 	printf("velocity_component: %f\n", velocity_component);
-						// }
 
 						width_cell_approx = getDoubleMin(length_corner, 
 														 width_cell_approx);
@@ -338,10 +323,10 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 			}
 		}
 
-// 暂时只用CFL
-		//double tau = tau_e;
+
+		double tau = tau_e;
 		//double tau = getDoubleMin(tau_e, tau_v);
-		double tau = getDoubleMin(tau_e, 1e-3);
+		//double tau = getDoubleMin(tau_e, 1e-3);
 		t += tau;
 		++time_step;
 		
@@ -442,10 +427,10 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 	
 	// Put out the data
 		if (time_step % OUTPUT_FREQUNCY == 0) {
-			printf("Put out data at time: %f\n", t);
-			// putOutNodeCoor(t, NUM_TOTAL_NODES_X, NUM_TOTAL_NODES_Y,
-			// 			   START_NODE_X, END_NODE_X, START_NODE_Y, END_NODE_Y, 
-			// 			   coor_node);
+			printf("Put out data at time: %.16f\n", t);
+			putOutNodeCoor(t, NUM_TOTAL_NODES_X, NUM_TOTAL_NODES_Y,
+						   START_NODE_X, END_NODE_X, START_NODE_Y, END_NODE_Y, 
+						   coor_node);
 		}
 
 		//起点不对

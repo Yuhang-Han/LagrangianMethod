@@ -34,23 +34,23 @@ void calNeighVertexIdx(size_t node_x, size_t node_y,
 
 double calCornerLength(double coor_p[2], double coor_pl[2], double coor_pr[2])
 {
-	double vec_plp[2], vec_ppr[2];
-	vecSubVec2(coor_p, coor_pl, vec_plp);
-	vecSubVec2(coor_pr, coor_p, vec_ppr);
+	double vec_ppl[2], vec_prp[2];
+	vecSubVec2(coor_pl, coor_p, vec_ppl);
+	vecSubVec2(coor_p, coor_pr, vec_prp);
 
-	double length_plp = calNorm2(vec_plp);
-	double length_ppr = calNorm2(vec_ppr);
+	double length_ppl = calNorm2(vec_ppl);
+	double length_prp = calNorm2(vec_prp);
 
-	double normal_plp[2], normal_ppr[2];
-	calRHNormal2(vec_plp, normal_plp);
-	calRHNormal2(vec_ppr, normal_ppr);
+	double normal_ppl[2], normal_prp[2];
+	calRHNormal2(vec_ppl, normal_ppl);
+	calRHNormal2(vec_prp, normal_prp);
 
-	double half_directed_normal_plp[2], half_directed_normal_ppr[2];
-	numMulVec2(length_plp/2.0, normal_plp, half_directed_normal_plp);
-	numMulVec2(length_ppr/2.0, normal_ppr, half_directed_normal_ppr);
+	double half_directed_normal_ppl[2], half_directed_normal_prp[2];
+	numMulVec2(length_ppl/2.0, normal_ppl, half_directed_normal_ppl);
+	numMulVec2(length_prp/2.0, normal_prp, half_directed_normal_prp);
 
 	double directed_length_corner[2];
-	vecAddVec2(half_directed_normal_plp, half_directed_normal_ppr,
+	vecAddVec2(half_directed_normal_ppl, half_directed_normal_prp,
 				directed_length_corner);
 
 	double length_corner = calNorm2(directed_length_corner);
@@ -60,26 +60,27 @@ double calCornerLength(double coor_p[2], double coor_pl[2], double coor_pr[2])
 
 
 
+// CCW: pl means next, pr means prev
 void calCornerNormal(double coor_p[2], double coor_pl[2], double coor_pr[2],
 						double normal_corner[2])
 {
-	double vec_plp[2], vec_ppr[2];
-	vecSubVec2(coor_p, coor_pl, vec_plp);
-	vecSubVec2(coor_pr, coor_p, vec_ppr);
+	double vec_ppl[2], vec_prp[2];
+	vecSubVec2(coor_pl, coor_p, vec_ppl);
+	vecSubVec2(coor_p, coor_pr, vec_prp);
 
-	double length_plp = calNorm2(vec_plp);
-	double length_ppr = calNorm2(vec_ppr);
+	double length_ppl = calNorm2(vec_ppl);
+	double length_prp = calNorm2(vec_prp);
 
-	double normal_plp[2], normal_ppr[2];
-	calRHNormal2(vec_plp, normal_plp);
-	calRHNormal2(vec_ppr, normal_ppr);
+	double normal_ppl[2], normal_prp[2];
+	calRHNormal2(vec_ppl, normal_ppl);
+	calRHNormal2(vec_prp, normal_prp);
 
-	double half_directed_normal_plp[2], half_directed_normal_ppr[2];
-	numMulVec2(length_plp/2.0, normal_plp, half_directed_normal_plp);
-	numMulVec2(length_ppr/2.0, normal_ppr, half_directed_normal_ppr);
+	double half_directed_normal_ppl[2], half_directed_normal_prp[2];
+	numMulVec2(length_ppl/2.0, normal_ppl, half_directed_normal_ppl);
+	numMulVec2(length_prp/2.0, normal_prp, half_directed_normal_prp);
 
 	double directed_length_corner[2];
-	vecAddVec2(half_directed_normal_plp, half_directed_normal_ppr,
+	vecAddVec2(half_directed_normal_ppl, half_directed_normal_prp,
 				directed_length_corner);
 
 	double length_corner = calNorm2(directed_length_corner);
