@@ -303,8 +303,7 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 				}
 
 				// update
-				volume_cell[iCy][iCx] += tau * volume_flux \
-												/ mass_cell[iCy][iCx];
+				volume_cell[iCy][iCx] += tau * volume_flux;
 
 				double contrib_sp_momentum[2];
 				numMulVec2(-tau/mass_cell[iCy][iCx], 
