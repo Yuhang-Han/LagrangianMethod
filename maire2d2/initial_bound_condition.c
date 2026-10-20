@@ -63,10 +63,11 @@ double initializeCellPresure(size_t cell_x, size_t cell_y,
 								+ (GAMMA - 1) * EXPLOSION_ENERGY \
 									/ (M_PI * pow(INITIAL_EXPLOSION_RADIUS, 2));
 
-	double min_vertex[2] = {cell_h_0/2., cell_h_1/2.};
-	if( calNorm2(min_vertex) < INITIAL_EXPLOSION_RADIUS ) {
+	double min_vertex[2] = {cell_h_0, cell_h_1};
+	if( calNorm2(min_vertex) > INITIAL_EXPLOSION_RADIUS ) {
 		printf("WARNING: Explotion radius is smaller than cell width.\n");
 		printf("Using pressure/area to initialize.\n");
+
 		explosion_pressure = explosion_pressure / (cell_h_0*cell_h_1);
 	}
 	
