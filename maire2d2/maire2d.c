@@ -306,7 +306,8 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 														 width_cell_approx);
 					}
 				}
-				double tau_e_cell = CFL_E * width_cell_approx / impendance;
+				double sound_speed = impendance / density_cell[iCy][iCx];
+				double tau_e_cell = CFL_E * width_cell_approx / sound_speed;
 				tau_e = getDoubleMin(tau_e_cell, tau_e);
 				
 				
