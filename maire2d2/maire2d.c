@@ -1,4 +1,7 @@
+
+#include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "linear_algebra_2d.h"
 #include "mesh_calculation.h"
@@ -24,18 +27,18 @@ int main()
 
 	const size_t OUTPUT_FREQUNCY = 10;
 
-	const double GAMMA = 1.4;
+	const double GAMMA = SEDOV_GAMMA;
 
-	const double T = 1.0;
+	const double T = SEDOV_FINAL_TIME;
 
 	const double CFL_E = 0.25;
 	const double CFL_V = 0.1;
 
-	const double L0 = 1.0;
-	const double L1 = 1.0;
+	const double L0 = SEDOV_DOMAIN_LENGTH;
+	const double L1 = SEDOV_DOMAIN_LENGTH;
 
-	const size_t NUM_CELLS_X = 20;
-	const size_t NUM_CELLS_Y = 20;
+	const size_t NUM_CELLS_X = SEDOV_NUM_CELLS;
+	const size_t NUM_CELLS_Y = SEDOV_NUM_CELLS;
 	const size_t NUM_CELLS = NUM_CELLS_X * NUM_CELLS_Y;
 	
 	const size_t NUM_NODES_X = NUM_CELLS_X + 1;
@@ -75,16 +78,6 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 	const size_t END_NODE_X = NUM_NODES_X;
 	const size_t START_NODE_Y = 1;
 	const size_t END_NODE_Y = NUM_NODES_Y;
-
-	const size_t START_TOTAL_CELL_X = 0;
-	const size_t END_TOTAL_CELL_X = NUM_TOTAL_CELLS_X - 1;
-	const size_t START_TOTAL_CELL_Y = 0;
-	const size_t END_TOTAL_CELL_Y = NUM_TOTAL_CELLS_Y - 1;
-	const size_t START_TOTAL_NODE_X = 0;
-	const size_t END_TOTAL_NODE_X = NUM_TOTAL_NODES_X - 1;
-	const size_t START_TOTAL_NODE_Y = 0;
-	const size_t END_TOTAL_NODE_Y = NUM_TOTAL_NODES_Y - 1;
-
 
 /*******************
 * Memory Allocation
@@ -160,35 +153,10 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 
 	while (t < T) {
 	// Apply boundary condition
-		//printf("boundarilizing...\n");
-		for(size_t iCy = START_TOTAL_CELL_Y; iCy <= END_TOTAL_CELL_Y; ++iCy) {
-			for(size_t iCx = START_TOTAL_CELL_X; iCx <= END_TOTAL_CELL_X; ++iCx) {
-				if (iCx >= START_CELL_X && iCx <= END_CELL_X &&
-				    iCy >= START_CELL_Y && iCy <= END_CELL_Y)
-					continue;
-
-			
-				mass_cell[iCy][iCx] 	 = boundarilizeMass(cell_h_0, cell_h_1);
-				density_cell[iCy][iCx]   = boundarilizeDensity();
-				pressure_cell[iCy][iCx]  = boundarilizePressure();
-				volume_cell[iCy][iCx]    = boundarilizeVolume(cell_h_0, cell_h_1);
-				sp_energy_cell[iCy][iCx] = boundarilizeSpEnergy(GAMMA);
-
-				boundarilizeSpMomentum(sp_momentum_cell[iCy][iCx]);
-			}
-		}
-
-		for(size_t iPy = START_TOTAL_NODE_Y; iPy <= END_TOTAL_NODE_Y; ++iPy) {
-			for(size_t iPx = START_TOTAL_NODE_X; iPx <= END_TOTAL_NODE_X; ++iPx) {
-				if (iPx >= START_NODE_X && iPx <= END_NODE_X &&
-				    iPy >= START_NODE_Y && iPy <= END_NODE_Y)
-					continue;
-
-				boundarilizeCoor(iPx, iPy, cell_h_0, cell_h_1, 
-								 START_NODE_X, START_NODE_Y,
-								 coor_node[iPy][iPx]);
-			}
-		}
+		applySedovCellBoundaries(NUM_CELLS_X, NUM_CELLS_Y,
+				cell_h_0, cell_h_1, GAMMA, mass_cell, density_cell,
+				pressure_cell, volume_cell, sp_energy_cell, sp_momentum_cell);
+		applySedovNodeBoundaries(NUM_CELLS_X, NUM_CELLS_Y, coor_node);
 
 		
 		
@@ -250,6 +218,8 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 				vecAddVec2(pressure_gradient, ave_velocity_node, corrected_force);
 				matMulVec2(node_matrix_inverse, corrected_force, 
 							velocity_node[iPy][iPx]);
+				applySedovVelocityBoundary(iPx, iPy, START_NODE_X, START_NODE_Y,
+										   velocity_node[iPy][iPx]);
 			}
 		}
 
@@ -258,8 +228,9 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 		double tau_e = T - t;
 		double tau_v = T - t;
 
-		for(size_t iCy = START_TOTAL_CELL_Y; iCy <= END_TOTAL_CELL_Y; ++iCy) {
-			for(size_t iCx = START_TOTAL_CELL_X; iCx <= END_TOTAL_CELL_X; ++iCx) {
+		/* Only physical cells have all four nodal velocities computed above. */
+		for(size_t iCy = START_CELL_Y; iCy <= END_CELL_Y; ++iCy) {
+			for(size_t iCx = START_CELL_X; iCx <= END_CELL_X; ++iCx) {
 
 				double impendance = calImpendance(density_cell[iCy][iCx],
 												  pressure_cell[iCy][iCx],
@@ -404,38 +375,19 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 			}
 		}
 
-	// Update cell volume
+	// Synchronize cell volume with the moved mesh (geometric conservation).
 		for(size_t iCy = START_CELL_Y; iCy <= END_CELL_Y; ++iCy) {
 			for(size_t iCx = START_CELL_X; iCx <= END_CELL_X; ++iCx) {
+				volume_cell[iCy][iCx] = calCellVolume(
+						coor_node[iCy][iCx], coor_node[iCy][iCx + 1],
+						coor_node[iCy + 1][iCx + 1], coor_node[iCy + 1][iCx]);
 
-				double volume_flux = 0.;
-				for(size_t iPy = iCy; iPy <= iCy + 1; ++iPy) {
-					for(size_t iPx = iCx; iPx <= iCx + 1; ++iPx) {
-						size_t node_next_x, node_next_y;
-						size_t node_prev_x, node_prev_y;
-						calNeighVertexIdx(iPx, iPy, iCx, iCy, 1,
-						                  &node_next_x, &node_next_y);
-						calNeighVertexIdx(iPx, iPy, iCx, iCy, -1,
-						                  &node_prev_x, &node_prev_y);
-
-						double length_corner  = \
-								calCornerLength(coor_node[iPy][iPx],
-												coor_node[node_next_y][node_next_x], 
-												coor_node[node_prev_y][node_prev_x]);
-														
-						double normal_corner[2];
-						calCornerNormal(coor_node[iPy][iPx], 
-										coor_node[node_next_y][node_next_x], 
-										coor_node[node_prev_y][node_prev_x],
-										normal_corner);
-						double velocity_component =
-									vecMulVec2(normal_corner, 
-												velocity_node[iPy][iPx]);
-						volume_flux += length_corner * velocity_component;
-					}
+				if (!isfinite(volume_cell[iCy][iCx]) || volume_cell[iCy][iCx] <= 0.0) {
+					fprintf(stderr,
+							"Invalid cell volume at step %zu, t=%.17g, cell=(%zu,%zu): %.17g\n",
+							time_step, t, iCx, iCy, volume_cell[iCy][iCx]);
+					return EXIT_FAILURE;
 				}
-				
-				volume_cell[iCy][iCx] += tau * volume_flux;
 			}
 		}
 		

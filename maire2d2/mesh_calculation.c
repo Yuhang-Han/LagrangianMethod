@@ -32,6 +32,23 @@ void calNeighVertexIdx(size_t node_x, size_t node_y,
 }
 
 
+double calCellVolume(const double coor_sw[2], const double coor_se[2],
+                     const double coor_ne[2], const double coor_nw[2])
+{
+    /* Half the cross product of the diagonals is the signed polygon area.
+     * Coordinate differences avoid cancellation of large absolute products
+     * when a small cell is translated far from the origin.
+     */
+    const double diagonal_0_x = coor_ne[0] - coor_sw[0];
+    const double diagonal_0_y = coor_ne[1] - coor_sw[1];
+    const double diagonal_1_x = coor_nw[0] - coor_se[0];
+    const double diagonal_1_y = coor_nw[1] - coor_se[1];
+
+    return 0.5 * (diagonal_0_x * diagonal_1_y
+                - diagonal_0_y * diagonal_1_x);
+}
+
+
 double calCornerLength(double coor_p[2], double coor_pl[2], double coor_pr[2])
 {
 	double vec_ppl[2], vec_prp[2];

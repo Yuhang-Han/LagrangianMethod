@@ -17,6 +17,9 @@ void calNeighVertexIdx(size_t node_x, size_t node_y,
                       size_t cell_x, size_t cell_y, int direction,
                       size_t *neigh_node_x, size_t *neigh_node_y);
 
+double calCellVolume(const double coor_sw[2], const double coor_se[2],
+                     const double coor_ne[2], const double coor_nw[2]);
+
 double calCornerLength(double coor_p[2], double coor_pl[2], double coor_pr[2]);
 void   calCornerNormal(double coor_p[2], double coor_pl[2], double coor_pr[2],
 					   double normal_corner[2]);
