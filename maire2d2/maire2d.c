@@ -128,7 +128,11 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 
 			initializeCellSpMomentum(sp_momentum_cell[iCy][iCx]);
 
-			pressure_cell[iCy][iCx] = initializeCellPresure(coor_node[0][2], GAMMA);
+			pressure_cell[iCy][iCx] = \
+				initializeCellPresure(iCx, iCy, cell_h_0, cell_h_1,
+								      NUM_TOTAL_NODES_X, NUM_TOTAL_NODES_Y,
+								      coor_node, GAMMA);
+			
 
 			sp_energy_cell[iCy][iCx] = initializeCellSpEnergy(density_cell[iCy][iCx],
 									sp_momentum_cell[iCy][iCx], pressure_cell[iCy][iCx], GAMMA);

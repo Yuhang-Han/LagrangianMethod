@@ -11,7 +11,11 @@ double initializeCellMass(double volume_cell, double density_cell);
 
 void initializeCellSpMomentum(double sp_momentum_cell[2]);
 
-double initializeCellPresure(double coor_node[2], double GAMMA);
+double initializeCellPresure(size_t cell_x, size_t cell_y,
+							double cell_h_0, double cell_h_1,
+						    size_t NUM_GHOST_NODES_X, size_t NUM_GHOST_NODES_Y,
+						    double coor_node[NUM_GHOST_NODES_Y][NUM_GHOST_NODES_X][2],
+						    double GAMMA);
 
 double initializeCellSpEnergy(double density_cell, double sp_momentum_cell[2], 
 							  double pressure_cell, double GAMMA);
