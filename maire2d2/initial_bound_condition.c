@@ -24,8 +24,8 @@ void initializeNodeCoor(size_t node_x, size_t node_y,
 						size_t START_NODE_X, size_t START_NODE_Y,
 						double coor_node[2])
 {
-	coor_node[0] = 0. + (node_x - START_NODE_X) * cell_h_0;
-	coor_node[1] = 0. + (node_y - START_NODE_Y) * cell_h_1;
+	coor_node[0] = 0. + ((int)node_x - (int)START_NODE_X) * cell_h_0;
+	coor_node[1] = 0. + ((int)node_y - (int)START_NODE_Y) * cell_h_1;
 }
 
 
