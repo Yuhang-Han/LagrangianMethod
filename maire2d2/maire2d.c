@@ -22,7 +22,7 @@ int main()
 *******************/
 	const double EPS = 1e-10;
 
-	const size_t OUTPUT_FREQUNCY = 100;
+	const size_t OUTPUT_FREQUNCY = 10;
 
 	const double GAMMA = 1.4;
 
@@ -330,29 +330,14 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 		//double tau = getDoubleMin(tau_e, 1e-3);
 		t += tau;
 		++time_step;
-		
-	
-	// Update node position
-		//printf("updating node position...\n");
-		for(size_t iPy = START_NODE_Y; iPy <= END_NODE_Y; ++iPy) {
-			for(size_t iPx = START_NODE_X; iPx <= END_NODE_X; ++iPx) {
-				// update a 2d vector: x_p += u_p * tau
-				double position_update[2];
-				numMulVec2(tau, velocity_node[iPy][iPx], position_update);
-				attVec2(coor_node[iPy][iPx], position_update);
-			}
-		}
 
-
-	// Update cell volume
-	//		 	   specific momentum
+	// Update cell specific momentum
 	//			   specific total energy
 	// and sync    density
 	//			   pressure
 		//printf("updating cell state...\n");
 		for(size_t iCy = START_CELL_Y; iCy <= END_CELL_Y; ++iCy) {
 			for(size_t iCx = START_CELL_X; iCx <= END_CELL_X; ++iCx) {
-				double volume_flux = 0;
 				double resul_force[2] = {0,};
 				double expan_power = 0;
 
@@ -389,12 +374,6 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 										velocity_node[iPy][iPx]);
 
 						/**********************************/
-
-						double velocity_component =
-									vecMulVec2(normal_corner, 
-												velocity_node[iPy][iPx]);
-						volume_flux += length_corner * velocity_component;
-
 						attVec2(resul_force, corner_force);
 
 						expan_power += vecMulVec2(corner_force, 
@@ -403,8 +382,6 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 				}
 
 				// update
-				volume_cell[iCy][iCx] += tau * volume_flux;
-
 				double contrib_sp_momentum[2];
 				numMulVec2(-tau/mass_cell[iCy][iCx], 
 							resul_force, contrib_sp_momentum);
@@ -413,7 +390,60 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 				sp_energy_cell[iCy][iCx] += - tau * expan_power \
 												/ mass_cell[iCy][iCx];
 
+			}
+		}
 
+	// Update node position
+		//printf("updating node position...\n");
+		for(size_t iPy = START_NODE_Y; iPy <= END_NODE_Y; ++iPy) {
+			for(size_t iPx = START_NODE_X; iPx <= END_NODE_X; ++iPx) {
+				// update a 2d vector: x_p += u_p * tau
+				double position_update[2];
+				numMulVec2(tau, velocity_node[iPy][iPx], position_update);
+				attVec2(coor_node[iPy][iPx], position_update);
+			}
+		}
+
+	// Update cell volume
+		for(size_t iCy = START_CELL_Y; iCy <= END_CELL_Y; ++iCy) {
+			for(size_t iCx = START_CELL_X; iCx <= END_CELL_X; ++iCx) {
+
+				double volume_flux = 0.;
+				for(size_t iPy = iCy; iPy <= iCy + 1; ++iPy) {
+					for(size_t iPx = iCx; iPx <= iCx + 1; ++iPx) {
+						size_t node_next_x, node_next_y;
+						size_t node_prev_x, node_prev_y;
+						calNeighVertexIdx(iPx, iPy, iCx, iCy, 1,
+						                  &node_next_x, &node_next_y);
+						calNeighVertexIdx(iPx, iPy, iCx, iCy, -1,
+						                  &node_prev_x, &node_prev_y);
+
+						double length_corner  = \
+								calCornerLength(coor_node[iPy][iPx],
+												coor_node[node_next_y][node_next_x], 
+												coor_node[node_prev_y][node_prev_x]);
+														
+						double normal_corner[2];
+						calCornerNormal(coor_node[iPy][iPx], 
+										coor_node[node_next_y][node_next_x], 
+										coor_node[node_prev_y][node_prev_x],
+										normal_corner);
+						double velocity_component =
+									vecMulVec2(normal_corner, 
+												velocity_node[iPy][iPx]);
+						volume_flux += length_corner * velocity_component;
+					}
+				}
+				
+				volume_cell[iCy][iCx] += tau * volume_flux;
+			}
+		}
+		
+	// Sync cell density
+	//			 pressure
+		//printf("updating cell state...\n");
+		for(size_t iCy = START_CELL_Y; iCy <= END_CELL_Y; ++iCy) {
+			for(size_t iCx = START_CELL_X; iCx <= END_CELL_X; ++iCx) {
 
 				// sync density and pressure
 				density_cell[iCy][iCx] = calCellDensity(volume_cell[iCy][iCx],
