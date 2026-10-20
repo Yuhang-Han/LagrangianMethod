@@ -3,6 +3,7 @@
 
 void initializeNodeCoor(size_t node_x, size_t node_y,
 						double cell_h_0, double cell_h_1,
+						size_t START_NODE_X, size_t START_NODE_Y,
 						double coor_node[2]);
 
 double initializeCellVolume(double cell_h_0, double cell_h_1);
@@ -30,4 +31,5 @@ void boundarilizeSpMomentum(double sp_momentum_cell[2]);
 
 void boundarilizeCoor(size_t node_x, size_t node_y,
 						double cell_h_0, double cell_h_1,
+						size_t START_NODE_X, size_t START_NODE_Y,
 						double coor_node[2]);

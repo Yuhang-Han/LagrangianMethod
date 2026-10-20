@@ -21,7 +21,7 @@ int main()
 * Model Coefficients
 *******************/
 
-	const size_t OUTPUT_FREQUNCY = 100;
+	const size_t OUTPUT_FREQUNCY = 10;
 
 	const double GAMMA = 1.4;
 
@@ -108,9 +108,12 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 	double cell_h_0 = L0 / NUM_CELLS_X;
 	double cell_h_1 = L1 / NUM_CELLS_Y;
 
+
 	for(size_t iPy = START_NODE_Y; iPy <= END_NODE_Y; ++iPy) {
 		for(size_t iPx = START_NODE_X; iPx <= END_NODE_X; ++iPx) {
-			initializeNodeCoor(iPx, iPy, cell_h_0, cell_h_1, coor_node[iPy][iPx]);
+			initializeNodeCoor(iPx, iPy, cell_h_0, cell_h_1, 
+								START_NODE_X, START_NODE_Y, 
+								coor_node[iPy][iPx]);
 
 			printf("node (%zu, %zu) (%f, %f)\n", iPx, iPy, coor_node[iPy][iPx][0], coor_node[iPy][iPx][1]);
 		}
@@ -176,6 +179,7 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 					continue;
 
 				boundarilizeCoor(iPx, iPy, cell_h_0, cell_h_1, 
+								 START_NODE_X, START_NODE_Y,
 								 coor_node[iPy][iPx]);
 			}
 		}
@@ -400,10 +404,13 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 
 	
 	// Put out the data
-		if (time_step / OUTPUT_FREQUNCY == 0)
+		if (time_step / OUTPUT_FREQUNCY == 0) {
+			printf("Put out data at time: %f\n", t);
 			putOutNodeCoor(t, NUM_TOTAL_NODES_X, NUM_TOTAL_NODES_Y,
 						   START_NODE_X, END_NODE_X, START_NODE_Y, END_NODE_Y, 
 						   coor_node);
+		}
+
 		//起点不对
 	}
 

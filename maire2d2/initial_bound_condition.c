@@ -21,10 +21,11 @@ const double EXPLOSION_ENERGY = 1.;
 
 void initializeNodeCoor(size_t node_x, size_t node_y,
 						double cell_h_0, double cell_h_1,
+						size_t START_NODE_X, size_t START_NODE_Y,
 						double coor_node[2])
 {
-	coor_node[0] = 0. + node_x * cell_h_0;
-	coor_node[1] = 0. + node_y * cell_h_1;
+	coor_node[0] = 0. + (node_x - START_NODE_X) * cell_h_0;
+	coor_node[1] = 0. + (node_y - START_NODE_Y) * cell_h_1;
 }
 
 
@@ -145,7 +146,10 @@ void boundarilizeSpMomentum(double sp_momentum_cell[2])
 
 void boundarilizeCoor(size_t node_x, size_t node_y,
 						double cell_h_0, double cell_h_1,
+						size_t START_NODE_X, size_t START_NODE_Y,
 						double coor_node[2])
 {
-	initializeNodeCoor(node_x, node_y, cell_h_0, cell_h_1, coor_node);
+	initializeNodeCoor(node_x, node_y, cell_h_0, cell_h_1, 
+						START_NODE_X, START_NODE_Y, 
+						coor_node);
 }
