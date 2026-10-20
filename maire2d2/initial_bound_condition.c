@@ -14,7 +14,7 @@
 
 const double EXPLOSION_CENTER[2] = {0.5, 0.5};
 
-const double INITIAL_EXPLOSION_RADIUS = 0.02;
+const double INITIAL_EXPLOSION_RADIUS = 0.1;
 const double AMBIENT_PRESSURE = 1e-5;
 const double EXPLOSION_ENERGY = 1.;
 
