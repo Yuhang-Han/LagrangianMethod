@@ -79,7 +79,7 @@ double initializeCellSpEnergy(double density_cell, double sp_momentum_cell[2],
 {
 	double interior = pressure_cell / (GAMMA - 1) / density_cell;
 	double sp_total_energy = interior \
-						+ 0.5 * calNorm2(sp_momentum_cell);
+						+ 0.5 * pow(calNorm2(sp_momentum_cell), 2);
 
 	return sp_total_energy;
 }
