@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <math.h>
 #include <stddef.h>
 #include <stdio.h>
 
@@ -80,10 +81,147 @@ static void testRectangularMeshAndGhostAdjacentNodes(void)
     }
 }
 
+static void expectNear(double actual, double expected)
+{
+    assert(isfinite(actual));
+    assert(fabs(actual - expected) <= 2e-12 * fmax(1.0, fabs(expected)));
+}
+
+static void testAnalyticCellAreas(void)
+{
+    const struct {
+        double vertices[4][2];
+        double area;
+    } cases[] = {
+        {{{0.0, 0.0}, {2.0, 0.0}, {2.0, 3.0}, {0.0, 3.0}}, 6.0},
+        /* Parallelogram with spanning vectors (3,1) and (2,3). */
+        {{{0.0, 0.0}, {3.0, 1.0}, {5.0, 4.0}, {2.0, 3.0}}, 7.0},
+        /* A 4x3 rectangle minus triangles of areas 1.5 and 2.0. */
+        {{{0.0, 0.0}, {4.0, 0.0}, {3.0, 2.0}, {0.0, 3.0}}, 8.5},
+        {{{0.0, 0.0}, {0.5, 0.0}, {0.5, 0.25}, {0.0, 0.25}}, 0.125}
+    };
+    const double offsets[][2] = {
+        {0.0, 0.0},
+        {7.25, -13.5},
+        /* Dyadic dimensions remain exactly representable at this offset. */
+        {1099511627776.0, -549755813888.0}
+    };
+
+    for (size_t c = 0; c < sizeof cases / sizeof cases[0]; ++c) {
+        for (size_t shift = 0; shift < sizeof offsets / sizeof offsets[0]; ++shift) {
+            double q[4][2];
+            for (size_t vertex = 0; vertex < 4; ++vertex)
+                for (size_t component = 0; component < 2; ++component)
+                    q[vertex][component] = cases[c].vertices[vertex][component]
+                                           + offsets[shift][component];
+            expectNear(calCellVolume(q[0], q[1], q[2], q[3]), cases[c].area);
+            /* Clockwise orientation must stay negative, not become fabs(area). */
+            expectNear(calCellVolume(q[0], q[3], q[2], q[1]), -cases[c].area);
+        }
+    }
+
+    const double line[4][2] = {{0.0, 0.0}, {1.0, 1.0}, {3.0, 3.0}, {2.0, 2.0}};
+    expectNear(calCellVolume(line[0], line[1], line[2], line[3]), 0.0);
+    expectNear(calCellVolume(line[0], line[0], line[0], line[0]), 0.0);
+}
+
+static double cornerVolumeFlux(double coor[4][2], double velocity[4][2])
+{
+    double flux = 0.0;
+    for (size_t vertex = 0; vertex < 4; ++vertex) {
+        double normal[2];
+        const size_t next = (vertex + 1) % 4;
+        const size_t prev = (vertex + 3) % 4;
+        const double length = calCornerLength(coor[vertex], coor[next], coor[prev]);
+        calCornerNormal(coor[vertex], coor[next], coor[prev], normal);
+        flux += length * (normal[0] * velocity[vertex][0]
+                          + normal[1] * velocity[vertex][1]);
+    }
+    return flux;
+}
+
+static void moveVertices(double coor[4][2], double velocity[4][2], double dt)
+{
+    for (size_t vertex = 0; vertex < 4; ++vertex)
+        for (size_t component = 0; component < 2; ++component)
+            coor[vertex][component] += dt * velocity[vertex][component];
+}
+
+static void testExpandingCell(void)
+{
+    double q[4][2] = {{0.0, 0.0}, {1.0, 0.0}, {1.0, 1.0}, {0.0, 1.0}};
+    double velocity[4][2] = {{0.0, 0.0}, {1.0, 0.0}, {1.0, 1.0}, {0.0, 1.0}};
+    const double initial_volume = calCellVolume(q[0], q[1], q[2], q[3]);
+    const double initial_flux = cornerVolumeFlux(q, velocity);
+    moveVertices(q, velocity, 0.1);
+    const double final_flux = cornerVolumeFlux(q, velocity);
+    const double final_volume = calCellVolume(q[0], q[1], q[2], q[3]);
+
+    /* x_new=1.1*x_old: both lengths grow by 1.1, so area grows by 1.21. */
+    expectNear(initial_volume, 1.0);
+    expectNear(initial_flux, 2.0);
+    expectNear(final_flux, 2.2);
+    expectNear(final_volume, 1.21);
+    expectNear(initial_volume + 0.1 * final_flux, 1.22);
+    expectNear(final_volume - initial_volume, 0.05 * (initial_flux + final_flux));
+}
+
+static void testRepeatedAffineMotion(void)
+{
+    const struct {
+        double gradient[2][2];
+        double determinant;
+    } motions[] = {
+        /* Pure shear preserves area. */
+        {{{0.0, 0.7}, {0.0, 0.0}}, 1.0},
+        /* det(I+0.2*A)=det([[1.06,-0.08],[0.04,0.98]])=1.042. */
+        {{{0.3, -0.4}, {0.2, -0.1}}, 1.042}
+    };
+
+    for (size_t motion = 0; motion < sizeof motions / sizeof motions[0]; ++motion) {
+        double q[4][2] = {{0.0, 0.0}, {2.0, 0.0}, {2.0, 3.0}, {0.0, 3.0}};
+        for (size_t step = 0; step < 20; ++step) {
+            double velocity[4][2];
+            for (size_t vertex = 0; vertex < 4; ++vertex) {
+                velocity[vertex][0] = motions[motion].gradient[0][0] * q[vertex][0]
+                                      + motions[motion].gradient[0][1] * q[vertex][1] + 0.7;
+                velocity[vertex][1] = motions[motion].gradient[1][0] * q[vertex][0]
+                                      + motions[motion].gradient[1][1] * q[vertex][1] - 0.2;
+            }
+            moveVertices(q, velocity, 0.2);
+            /* Translation has no effect; the determinant controls each step. */
+            expectNear(calCellVolume(q[0], q[1], q[2], q[3]),
+                       6.0 * pow(motions[motion].determinant, (double)(step + 1)));
+        }
+    }
+}
+
+static void testNonAffineGeometricConservation(void)
+{
+    double q[4][2] = {{0.0, 0.0}, {2.0, 0.0}, {2.5, 1.5}, {0.0, 1.0}};
+    /* These velocities cannot all be represented by one affine velocity field. */
+    double velocity[4][2] = {{0.1, -0.2}, {0.3, 0.4}, {-0.2, 0.5}, {0.4, -0.1}};
+    const double initial_volume = calCellVolume(q[0], q[1], q[2], q[3]);
+    const double initial_flux = cornerVolumeFlux(q, velocity);
+    moveVertices(q, velocity, 0.2);
+    const double final_volume = calCellVolume(q[0], q[1], q[2], q[3]);
+    const double final_flux = cornerVolumeFlux(q, velocity);
+
+    expectNear(initial_volume, 2.75);
+    expectNear(final_volume, 2.7216);
+    /* For linearly moving vertices, corner volume flux is linear in time. */
+    expectNear(final_volume - initial_volume, 0.1 * (initial_flux + final_flux));
+    assert(fabs(final_volume - (initial_volume + 0.2 * final_flux)) > 1e-4);
+}
+
 int main(void)
 {
     testEveryCornerAndDirection();
     testRectangularMeshAndGhostAdjacentNodes();
-    puts("mesh_calculation_test: neighbor-index assertions passed");
+    testAnalyticCellAreas();
+    testExpandingCell();
+    testRepeatedAffineMotion();
+    testNonAffineGeometricConservation();
+    puts("mesh_calculation_test: PASS (neighbors, signed areas, and geometric conservation)");
     return 0;
 }
