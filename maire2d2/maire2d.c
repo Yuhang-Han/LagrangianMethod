@@ -25,6 +25,10 @@ int main()
 *******************/
 	const double EPS = 1e-10;
 
+	/* This selection controls both the nodal solver and the corner forces. */
+	// CORNER_SCHEME_GLACE or CORNER_SCHEME_EUCCLHYD
+	const CornerScheme SCHEME = CORNER_SCHEME_EUCCLHYD;
+
 	const size_t OUTPUT_FREQUNCY = 10;
 
 	const double GAMMA = SEDOV_GAMMA;
@@ -33,6 +37,7 @@ int main()
 
 	const double CFL_E = 0.25;
 	const double CFL_V = 0.1;
+	const double CFL_M = 1.01;
 
 	const double L0 = SEDOV_DOMAIN_LENGTH;
 	const double L1 = SEDOV_DOMAIN_LENGTH;
@@ -148,6 +153,7 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 	printf("\n Time advancing...\n");
 
 	double t = 0.0;
+	double tau = L0 + L1;
 
 	size_t time_step = 0;
 
@@ -193,8 +199,10 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 							calImpendance(density_cell[iCy][iCx],
 										  pressure_cell[iCy][iCx], GAMMA);
 						double matrix_corner[2][2];
-						calMatCorner_glace(length_corner, normal_corner, 
-											impendance, matrix_corner);
+						calMatCorner(SCHEME, coor_node[iPy][iPx],
+								coor_node[node_next_y][node_next_x],
+								coor_node[node_prev_y][node_prev_x],
+								impendance, matrix_corner);
 
 						double contrib_pressure_gradient[2];
 						numMulVec2(length_corner * pressure_cell[iCy][iCx], 
@@ -258,15 +266,6 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 										coor_node[node_prev_y][node_prev_x],
 										normal_corner);
 
-						double corner_force[2];
-						calCornerForce(corner_force, impendance,
-										sp_momentum_cell[iCy][iCx], 
-										pressure_cell[iCy][iCx],
-										length_corner, normal_corner,
-										velocity_node[iPy][iPx]);
-
-						/**********************************/
-
 						double velocity_component =
 									vecMulVec2(normal_corner, 
 												velocity_node[iPy][iPx]);
@@ -296,9 +295,9 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 		}
 
 
-		double tau = tau_e;
-		//double tau = getDoubleMin(tau_e, tau_v);
-		//double tau = getDoubleMin(tau_e, 1e-3);
+		//tau = tau_e;
+		tau = getDoubleMin(tau_e, tau_v);
+		//tau = getDoubleMin(getDoubleMin(tau_e, tau_v), CFL_M*tau);
 		t += tau;
 		++time_step;
 
@@ -337,8 +336,13 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 								calImpendance(density_cell[iCy][iCx],
 											  pressure_cell[iCy][iCx], 
 											  GAMMA);
+						double matrix_corner[2][2];
+						calMatCorner(SCHEME, coor_node[iPy][iPx],
+								coor_node[node_next_y][node_next_x],
+								coor_node[node_prev_y][node_prev_x],
+								impendance, matrix_corner);
 						double corner_force[2];
-						calCornerForce(corner_force, impendance,
+						calCornerForce(corner_force, matrix_corner,
 										sp_momentum_cell[iCy][iCx], 
 										pressure_cell[iCy][iCx],
 										length_corner, normal_corner,
@@ -416,11 +420,10 @@ printf("bound nodes: %zu\n", NUM_BOUND_NODES);
 						   coor_node);
 		}
 
-		//起点不对
 	}
 
 	printf("Time advance is done\n");
-	printf("time_end: %f\n", t);
+	printf("time_end: %f, steps: %zu\n", t, time_step);
 	printf("Put out data at time: %f\n", t);
 	putOutNodeCoor(t, NUM_TOTAL_NODES_X, NUM_TOTAL_NODES_Y,
 				   START_NODE_X, END_NODE_X, START_NODE_Y, END_NODE_Y, 
