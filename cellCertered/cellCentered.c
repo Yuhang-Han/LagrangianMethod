@@ -168,7 +168,7 @@ int main(int argc, char *argv[])
 			un_half[iFace] = (zL*un[iFace] + zR*un[iFace+1]) / (zL + zR) \
 							-(pn[iFace+1] - pn[iFace]) / (zL + zR);
 							
-			pn_half[iFace] = (zL*pn[iFace] + zR*pn[iFace+1]) / (zL + zR) \
+			pn_half[iFace] = (zL*pn[iFace+1] + zR*pn[iFace]) / (zL + zR) \
 							-(un[iFace+1] - un[iFace]) * (zL*zR) / (zL + zR);
 		}
 
