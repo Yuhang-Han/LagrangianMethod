@@ -38,10 +38,9 @@ int main(int argc, char *argv[])
 
 	const double H   = X/N;
 
-	// const double EPS = 0.5;
-	const double CFL = 0.3;
+	const double CFL = 0.8;
 
-	const double xSeparate = (0.0 + X) / 2;
+	const double xSeparate = (0.0 + X) / 2.;
 
 
 // Initialize ----------------------------
@@ -51,7 +50,6 @@ int main(int argc, char *argv[])
 	for(size_t i = 0; i < N+1; ++i) {
 		xEuler[i] = i*H;
 	}
-
 
 	double *Vn = malloc((N+2)*sizeof(double));
 	double *un = malloc((N+2)*sizeof(double));
@@ -63,7 +61,6 @@ int main(int argc, char *argv[])
 	double *E  = malloc((N+2)*sizeof(double));
 
 	double *m  = malloc((N+2)*sizeof(double));
-
 
 	// Toro shock tube	
 	for(size_t iGhost = 0; iGhost < N+2; ++iGhost) {
@@ -92,8 +89,8 @@ int main(int argc, char *argv[])
 	
 	double pn_half[N+1], un_half[N+1];		// states on interfaces
 	double an[N+2];							// local acoustic speed
+	
 	double t = 0;							// timer
-
 	size_t it = 0;
 
 	while (t < T) {
@@ -102,25 +99,15 @@ int main(int argc, char *argv[])
 		}
 		
 		// Set time step length
-		// const double tau = T / 10000;
-		 ++it;
-			
-
-		double tau = T;			
+		double tau = T - t;		
 		for(size_t iCell = 1; iCell < N+1; ++iCell){
-			double tau_local = CFL * H / (fabs(un[iCell]) + an[iCell]);  
-			//printf("tau_local: %f\n", tau_local);
+			double dx = m[iCell] * Vn[iCell];
+			double tau_local = CFL * dx / an[iCell];
 			tau = fmin(tau_local, tau);
 		}
-		//printf("tau: %f\n", tau);
+		t += tau;
+		++it;
 
-		if (t + tau > T) {
-			tau = T - t;
-			t = T;
-		}
-		else {
-			t += tau;
-		}
 
 		// Solve interface states by acoustic approximatation
 		for(size_t iFace = 0; iFace < N+1; ++iFace) {
@@ -150,7 +137,6 @@ int main(int argc, char *argv[])
 											- pn_half[iCell-1]*un_half[iCell-1] );
 			p[iCell] = (GAMMA-1) * (E[iCell] - 0.5*pow(u[iCell],2)) / V[iCell];
 		}
-
 
 		// Free boundary condition
 		V[0] = V[1];	V[N+1] = V[N];
@@ -210,3 +196,5 @@ int main(int argc, char *argv[])
 	free(V);	free(u); 	free(p);	free(E);
 	free(m);
 }
+
+
