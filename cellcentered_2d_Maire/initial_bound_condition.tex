@@ -1,0 +1,342 @@
+
+\documentclass{article}
+\usepackage{fancyvrb}
+\usepackage{color}
+\usepackage[utf8]{inputenc}
+
+
+
+\makeatletter
+\def\PY@reset{\let\PY@it=\relax \let\PY@bf=\relax%
+    \let\PY@ul=\relax \let\PY@tc=\relax%
+    \let\PY@bc=\relax \let\PY@ff=\relax}
+\def\PY@tok#1{\csname PY@tok@#1\endcsname}
+\def\PY@toks#1+{\ifx\relax#1\empty\else%
+    \PY@tok{#1}\expandafter\PY@toks\fi}
+\def\PY@do#1{\PY@bc{\PY@tc{\PY@ul{%
+    \PY@it{\PY@bf{\PY@ff{#1}}}}}}}
+\def\PY#1#2{\PY@reset\PY@toks#1+\relax+\PY@do{#2}}
+
+\@namedef{PY@tok@w}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.73,0.73}{##1}}}
+\@namedef{PY@tok@c}{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.24,0.48,0.48}{##1}}}
+\@namedef{PY@tok@cp}{\def\PY@tc##1{\textcolor[rgb]{0.61,0.40,0.00}{##1}}}
+\@namedef{PY@tok@k}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@kp}{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@kt}{\def\PY@tc##1{\textcolor[rgb]{0.69,0.00,0.25}{##1}}}
+\@namedef{PY@tok@o}{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\@namedef{PY@tok@ow}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.67,0.13,1.00}{##1}}}
+\@namedef{PY@tok@nb}{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@nf}{\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\@namedef{PY@tok@nc}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\@namedef{PY@tok@nn}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\@namedef{PY@tok@ne}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.80,0.25,0.22}{##1}}}
+\@namedef{PY@tok@nv}{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\@namedef{PY@tok@no}{\def\PY@tc##1{\textcolor[rgb]{0.53,0.00,0.00}{##1}}}
+\@namedef{PY@tok@nl}{\def\PY@tc##1{\textcolor[rgb]{0.46,0.46,0.00}{##1}}}
+\@namedef{PY@tok@ni}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.44,0.44,0.44}{##1}}}
+\@namedef{PY@tok@na}{\def\PY@tc##1{\textcolor[rgb]{0.41,0.47,0.13}{##1}}}
+\@namedef{PY@tok@nt}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@nd}{\def\PY@tc##1{\textcolor[rgb]{0.67,0.13,1.00}{##1}}}
+\@namedef{PY@tok@s}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@sd}{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@si}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.64,0.35,0.47}{##1}}}
+\@namedef{PY@tok@se}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.67,0.36,0.12}{##1}}}
+\@namedef{PY@tok@sr}{\def\PY@tc##1{\textcolor[rgb]{0.64,0.35,0.47}{##1}}}
+\@namedef{PY@tok@ss}{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\@namedef{PY@tok@sx}{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@m}{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\@namedef{PY@tok@gh}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,0.50}{##1}}}
+\@namedef{PY@tok@gu}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.50,0.00,0.50}{##1}}}
+\@namedef{PY@tok@gd}{\def\PY@tc##1{\textcolor[rgb]{0.63,0.00,0.00}{##1}}}
+\@namedef{PY@tok@gi}{\def\PY@tc##1{\textcolor[rgb]{0.00,0.52,0.00}{##1}}}
+\@namedef{PY@tok@gr}{\def\PY@tc##1{\textcolor[rgb]{0.89,0.00,0.00}{##1}}}
+\@namedef{PY@tok@ge}{\let\PY@it=\textit}
+\@namedef{PY@tok@gs}{\let\PY@bf=\textbf}
+\@namedef{PY@tok@ges}{\let\PY@bf=\textbf\let\PY@it=\textit}
+\@namedef{PY@tok@gp}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,0.50}{##1}}}
+\@namedef{PY@tok@go}{\def\PY@tc##1{\textcolor[rgb]{0.44,0.44,0.44}{##1}}}
+\@namedef{PY@tok@gt}{\def\PY@tc##1{\textcolor[rgb]{0.00,0.27,0.87}{##1}}}
+\@namedef{PY@tok@err}{\def\PY@bc##1{{\setlength{\fboxsep}{\string -\fboxrule}\fcolorbox[rgb]{1.00,0.00,0.00}{1,1,1}{\strut ##1}}}}
+\@namedef{PY@tok@kc}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@kd}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@kn}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@kr}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@bp}{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@fm}{\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\@namedef{PY@tok@vc}{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\@namedef{PY@tok@vg}{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\@namedef{PY@tok@vi}{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\@namedef{PY@tok@vm}{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\@namedef{PY@tok@sa}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@sb}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@sc}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@dl}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@s2}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@sh}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@s1}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@mb}{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\@namedef{PY@tok@mf}{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\@namedef{PY@tok@mh}{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\@namedef{PY@tok@mi}{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\@namedef{PY@tok@il}{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\@namedef{PY@tok@mo}{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\@namedef{PY@tok@ch}{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.24,0.48,0.48}{##1}}}
+\@namedef{PY@tok@cm}{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.24,0.48,0.48}{##1}}}
+\@namedef{PY@tok@cpf}{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.24,0.48,0.48}{##1}}}
+\@namedef{PY@tok@c1}{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.24,0.48,0.48}{##1}}}
+\@namedef{PY@tok@cs}{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.24,0.48,0.48}{##1}}}
+
+\def\PYZbs{\char`\\}
+\def\PYZus{\char`\_}
+\def\PYZob{\char`\{}
+\def\PYZcb{\char`\}}
+\def\PYZca{\char`\^}
+\def\PYZam{\char`\&}
+\def\PYZlt{\char`\<}
+\def\PYZgt{\char`\>}
+\def\PYZsh{\char`\#}
+\def\PYZpc{\char`\%}
+\def\PYZdl{\char`\$}
+\def\PYZhy{\char`\-}
+\def\PYZsq{\char`\'}
+\def\PYZdq{\char`\"}
+\def\PYZti{\char`\~}
+% for compatibility with earlier versions
+\def\PYZat{@}
+\def\PYZlb{[}
+\def\PYZrb{]}
+\makeatother
+
+
+\usepackage[margin=0.4in]{geometry}
+\pagestyle{empty}
+\begin{document}
+
+\section*{}
+
+\begin{Verbatim}[commandchars=\\\{\},numbers=left,firstnumber=1,stepnumber=1]
+\PY{c+cm}{/*}
+\PY{c+cm}{ * Cartesian Sedov test: Maire\PYZsq{}s HDR, printed pp. 109 and 112.}
+\PY{c+cm}{ * Domain [0, 1.2]\PYZca{}2, 30 x 30 cells, rho=1, p=1e\PYZhy{}6, u=0, gamma=7/5.}
+\PY{c+cm}{ * Deposit E0=0.244816 in the single physical cell at the origin.}
+\PY{c+cm}{ *}
+\PY{c+cm}{ * Boundary interpretation: reflect across the coordinate axes and retain}
+\PY{c+cm}{ * ambient states beyond the right/top boundaries. The exact shock reaches}
+\PY{c+cm}{ * R=1 at t=1, inside this domain. First\PYZhy{}order acoustic GLACE can still fold}
+\PY{c+cm}{ * the mesh on this test, as reported on printed p. 112.}
+\PY{c+cm}{ */}
+
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include}\PY{+w}{ }\PY{c+cpf}{\PYZdq{}initial\PYZus{}bound\PYZus{}condition.h\PYZdq{}}
+
+\PY{k}{const}\PY{+w}{ }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{SEDOV\PYZus{}GAMMA}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{l+m+mf}{7.0}\PY{+w}{ }\PY{o}{/}\PY{+w}{ }\PY{l+m+mf}{5.0}\PY{p}{;}
+\PY{k}{const}\PY{+w}{ }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{SEDOV\PYZus{}FINAL\PYZus{}TIME}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{l+m+mf}{1.0}\PY{p}{;}
+\PY{k}{const}\PY{+w}{ }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{SEDOV\PYZus{}DOMAIN\PYZus{}LENGTH}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{l+m+mf}{1.2}\PY{p}{;}
+\PY{k}{const}\PY{+w}{ }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{SEDOV\PYZus{}AMBIENT\PYZus{}DENSITY}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{l+m+mf}{1.0}\PY{p}{;}
+\PY{k}{const}\PY{+w}{ }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{SEDOV\PYZus{}AMBIENT\PYZus{}PRESSURE}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{l+m+mf}{1e\PYZhy{}6}\PY{p}{;}
+\PY{k}{const}\PY{+w}{ }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{SEDOV\PYZus{}EXPLOSION\PYZus{}ENERGY}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{l+m+mf}{0.244816}\PY{p}{;}
+
+\PY{k+kt}{void}\PY{+w}{ }\PY{n+nf}{initializeNodeCoor}\PY{p}{(}\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{node\PYZus{}x}\PY{p}{,}\PY{+w}{ }\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{node\PYZus{}y}\PY{p}{,}
+\PY{+w}{                        }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{cell\PYZus{}h\PYZus{}0}\PY{p}{,}\PY{+w}{ }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{cell\PYZus{}h\PYZus{}1}\PY{p}{,}
+\PY{+w}{                        }\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{START\PYZus{}NODE\PYZus{}X}\PY{p}{,}\PY{+w}{ }\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{START\PYZus{}NODE\PYZus{}Y}\PY{p}{,}
+\PY{+w}{                        }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{coor\PYZus{}node}\PY{p}{[}\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{)}
+\PY{p}{\PYZob{}}
+\PY{+w}{    }\PY{c+cm}{/* Convert before subtracting: size\PYZus{}t would wrap for lower ghost indices. */}
+\PY{+w}{    }\PY{n}{coor\PYZus{}node}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{p}{(}\PY{p}{(}\PY{k+kt}{double}\PY{p}{)}\PY{n}{node\PYZus{}x}\PY{+w}{ }\PY{o}{\PYZhy{}}\PY{+w}{ }\PY{p}{(}\PY{k+kt}{double}\PY{p}{)}\PY{n}{START\PYZus{}NODE\PYZus{}X}\PY{p}{)}\PY{+w}{ }\PY{o}{*}\PY{+w}{ }\PY{n}{cell\PYZus{}h\PYZus{}0}\PY{p}{;}
+\PY{+w}{    }\PY{n}{coor\PYZus{}node}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{]}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{p}{(}\PY{p}{(}\PY{k+kt}{double}\PY{p}{)}\PY{n}{node\PYZus{}y}\PY{+w}{ }\PY{o}{\PYZhy{}}\PY{+w}{ }\PY{p}{(}\PY{k+kt}{double}\PY{p}{)}\PY{n}{START\PYZus{}NODE\PYZus{}Y}\PY{p}{)}\PY{+w}{ }\PY{o}{*}\PY{+w}{ }\PY{n}{cell\PYZus{}h\PYZus{}1}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+
+\PY{k+kt}{double}\PY{+w}{ }\PY{n+nf}{initializeCellVolume}\PY{p}{(}\PY{k+kt}{double}\PY{+w}{ }\PY{n}{cell\PYZus{}h\PYZus{}0}\PY{p}{,}\PY{+w}{ }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{cell\PYZus{}h\PYZus{}1}\PY{p}{)}
+\PY{p}{\PYZob{}}
+\PY{+w}{    }\PY{k}{return}\PY{+w}{ }\PY{n}{cell\PYZus{}h\PYZus{}0}\PY{+w}{ }\PY{o}{*}\PY{+w}{ }\PY{n}{cell\PYZus{}h\PYZus{}1}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+
+\PY{k+kt}{double}\PY{+w}{ }\PY{n+nf}{initializeCellDensity}\PY{p}{(}\PY{k+kt}{void}\PY{p}{)}
+\PY{p}{\PYZob{}}
+\PY{+w}{    }\PY{k}{return}\PY{+w}{ }\PY{n}{SEDOV\PYZus{}AMBIENT\PYZus{}DENSITY}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+
+\PY{k+kt}{double}\PY{+w}{ }\PY{n+nf}{initializeCellMass}\PY{p}{(}\PY{k+kt}{double}\PY{+w}{ }\PY{n}{volume\PYZus{}cell}\PY{p}{,}\PY{+w}{ }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{density\PYZus{}cell}\PY{p}{)}
+\PY{p}{\PYZob{}}
+\PY{+w}{    }\PY{k}{return}\PY{+w}{ }\PY{n}{volume\PYZus{}cell}\PY{+w}{ }\PY{o}{*}\PY{+w}{ }\PY{n}{density\PYZus{}cell}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+
+\PY{k+kt}{void}\PY{+w}{ }\PY{n+nf}{initializeCellSpMomentum}\PY{p}{(}\PY{k+kt}{double}\PY{+w}{ }\PY{n}{sp\PYZus{}momentum\PYZus{}cell}\PY{p}{[}\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{)}
+\PY{p}{\PYZob{}}
+\PY{+w}{    }\PY{n}{sp\PYZus{}momentum\PYZus{}cell}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{l+m+mf}{0.0}\PY{p}{;}
+\PY{+w}{    }\PY{n}{sp\PYZus{}momentum\PYZus{}cell}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{]}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{l+m+mf}{0.0}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+
+\PY{k+kt}{double}\PY{+w}{ }\PY{n+nf}{initializeCellPresure}\PY{p}{(}\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{cell\PYZus{}x}\PY{p}{,}\PY{+w}{ }\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{cell\PYZus{}y}\PY{p}{,}
+\PY{+w}{                             }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{cell\PYZus{}h\PYZus{}0}\PY{p}{,}\PY{+w}{ }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{cell\PYZus{}h\PYZus{}1}\PY{p}{,}
+\PY{+w}{                             }\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{NUM\PYZus{}TOTAL\PYZus{}NODES\PYZus{}X}\PY{p}{,}\PY{+w}{ }\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{NUM\PYZus{}TOTAL\PYZus{}NODES\PYZus{}Y}\PY{p}{,}
+\PY{+w}{                             }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{coor\PYZus{}node}\PY{p}{[}\PY{n}{NUM\PYZus{}TOTAL\PYZus{}NODES\PYZus{}Y}\PY{p}{]}\PY{p}{[}\PY{n}{NUM\PYZus{}TOTAL\PYZus{}NODES\PYZus{}X}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{,}
+\PY{+w}{                             }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{GAMMA}\PY{p}{)}
+\PY{p}{\PYZob{}}
+\PY{+w}{    }\PY{c+cm}{/* initializeNodeCoor places the southwest physical vertex exactly at 0. */}
+\PY{+w}{    }\PY{k}{if}\PY{+w}{ }\PY{p}{(}\PY{n}{coor\PYZus{}node}\PY{p}{[}\PY{n}{cell\PYZus{}y}\PY{p}{]}\PY{p}{[}\PY{n}{cell\PYZus{}x}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{+w}{ }\PY{o}{=}\PY{o}{=}\PY{+w}{ }\PY{l+m+mf}{0.0}\PY{+w}{ }\PY{o}{\PYZam{}}\PY{o}{\PYZam{}}
+\PY{+w}{        }\PY{n}{coor\PYZus{}node}\PY{p}{[}\PY{n}{cell\PYZus{}y}\PY{p}{]}\PY{p}{[}\PY{n}{cell\PYZus{}x}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{]}\PY{+w}{ }\PY{o}{=}\PY{o}{=}\PY{+w}{ }\PY{l+m+mf}{0.0}\PY{p}{)}\PY{+w}{ }\PY{p}{\PYZob{}}
+\PY{+w}{        }\PY{k}{const}\PY{+w}{ }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{volume}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{n}{initializeCellVolume}\PY{p}{(}\PY{n}{cell\PYZus{}h\PYZus{}0}\PY{p}{,}\PY{+w}{ }\PY{n}{cell\PYZus{}h\PYZus{}1}\PY{p}{)}\PY{p}{;}
+
+\PY{+w}{        }\PY{c+cm}{/* Literal p\PYZus{}or=(gamma\PYZhy{}1)*rho\PYZus{}or*E0/v\PYZus{}or from p. 109.}
+\PY{c+cm}{         * E0 is used directly in this quadrant: no extra factor of 1/4,}
+\PY{c+cm}{         * no finite\PYZhy{}radius disk, and no added ambient pressure.}
+\PY{c+cm}{         */}
+\PY{+w}{        }\PY{k}{return}\PY{+w}{ }\PY{p}{(}\PY{n}{GAMMA}\PY{+w}{ }\PY{o}{\PYZhy{}}\PY{+w}{ }\PY{l+m+mf}{1.0}\PY{p}{)}\PY{+w}{ }\PY{o}{*}\PY{+w}{ }\PY{n}{initializeCellDensity}\PY{p}{(}\PY{p}{)}
+\PY{+w}{               }\PY{o}{*}\PY{+w}{ }\PY{n}{SEDOV\PYZus{}EXPLOSION\PYZus{}ENERGY}\PY{+w}{ }\PY{o}{/}\PY{+w}{ }\PY{n}{volume}\PY{p}{;}
+\PY{+w}{    }\PY{p}{\PYZcb{}}
+
+\PY{+w}{    }\PY{k}{return}\PY{+w}{ }\PY{n}{SEDOV\PYZus{}AMBIENT\PYZus{}PRESSURE}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+
+\PY{k+kt}{double}\PY{+w}{ }\PY{n+nf}{initializeCellSpEnergy}\PY{p}{(}\PY{k+kt}{double}\PY{+w}{ }\PY{n}{density\PYZus{}cell}\PY{p}{,}
+\PY{+w}{                              }\PY{k}{const}\PY{+w}{ }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{sp\PYZus{}momentum\PYZus{}cell}\PY{p}{[}\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{,}
+\PY{+w}{                              }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{pressure\PYZus{}cell}\PY{p}{,}\PY{+w}{ }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{GAMMA}\PY{p}{)}
+\PY{p}{\PYZob{}}
+\PY{+w}{    }\PY{k}{const}\PY{+w}{ }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{internal}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{n}{pressure\PYZus{}cell}\PY{+w}{ }\PY{o}{/}\PY{+w}{ }\PY{p}{(}\PY{p}{(}\PY{n}{GAMMA}\PY{+w}{ }\PY{o}{\PYZhy{}}\PY{+w}{ }\PY{l+m+mf}{1.0}\PY{p}{)}\PY{+w}{ }\PY{o}{*}\PY{+w}{ }\PY{n}{density\PYZus{}cell}\PY{p}{)}\PY{p}{;}
+\PY{+w}{    }\PY{k}{const}\PY{+w}{ }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{kinetic}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{l+m+mf}{0.5}\PY{+w}{ }\PY{o}{*}\PY{+w}{ }\PY{p}{(}\PY{n}{sp\PYZus{}momentum\PYZus{}cell}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{+w}{ }\PY{o}{*}\PY{+w}{ }\PY{n}{sp\PYZus{}momentum\PYZus{}cell}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}
+\PY{+w}{                                }\PY{o}{+}\PY{+w}{ }\PY{n}{sp\PYZus{}momentum\PYZus{}cell}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{]}\PY{+w}{ }\PY{o}{*}\PY{+w}{ }\PY{n}{sp\PYZus{}momentum\PYZus{}cell}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{]}\PY{p}{)}\PY{p}{;}
+\PY{+w}{    }\PY{k}{return}\PY{+w}{ }\PY{n}{internal}\PY{+w}{ }\PY{o}{+}\PY{+w}{ }\PY{n}{kinetic}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+
+\PY{k+kt}{double}\PY{+w}{ }\PY{n+nf}{boundarilizeMass}\PY{p}{(}\PY{k+kt}{double}\PY{+w}{ }\PY{n}{cell\PYZus{}h\PYZus{}0}\PY{p}{,}\PY{+w}{ }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{cell\PYZus{}h\PYZus{}1}\PY{p}{)}
+\PY{p}{\PYZob{}}
+\PY{+w}{    }\PY{k}{return}\PY{+w}{ }\PY{n}{initializeCellMass}\PY{p}{(}\PY{n}{boundarilizeVolume}\PY{p}{(}\PY{n}{cell\PYZus{}h\PYZus{}0}\PY{p}{,}\PY{+w}{ }\PY{n}{cell\PYZus{}h\PYZus{}1}\PY{p}{)}\PY{p}{,}
+\PY{+w}{                              }\PY{n}{boundarilizeDensity}\PY{p}{(}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+
+\PY{k+kt}{double}\PY{+w}{ }\PY{n+nf}{boundarilizeDensity}\PY{p}{(}\PY{k+kt}{void}\PY{p}{)}
+\PY{p}{\PYZob{}}
+\PY{+w}{    }\PY{k}{return}\PY{+w}{ }\PY{n}{SEDOV\PYZus{}AMBIENT\PYZus{}DENSITY}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+
+\PY{k+kt}{double}\PY{+w}{ }\PY{n+nf}{boundarilizePressure}\PY{p}{(}\PY{k+kt}{void}\PY{p}{)}
+\PY{p}{\PYZob{}}
+\PY{+w}{    }\PY{k}{return}\PY{+w}{ }\PY{n}{SEDOV\PYZus{}AMBIENT\PYZus{}PRESSURE}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+
+\PY{k+kt}{double}\PY{+w}{ }\PY{n+nf}{boundarilizeVolume}\PY{p}{(}\PY{k+kt}{double}\PY{+w}{ }\PY{n}{cell\PYZus{}h\PYZus{}0}\PY{p}{,}\PY{+w}{ }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{cell\PYZus{}h\PYZus{}1}\PY{p}{)}
+\PY{p}{\PYZob{}}
+\PY{+w}{    }\PY{k}{return}\PY{+w}{ }\PY{n}{initializeCellVolume}\PY{p}{(}\PY{n}{cell\PYZus{}h\PYZus{}0}\PY{p}{,}\PY{+w}{ }\PY{n}{cell\PYZus{}h\PYZus{}1}\PY{p}{)}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+
+\PY{k+kt}{double}\PY{+w}{ }\PY{n+nf}{boundarilizeSpEnergy}\PY{p}{(}\PY{k+kt}{double}\PY{+w}{ }\PY{n}{GAMMA}\PY{p}{)}
+\PY{p}{\PYZob{}}
+\PY{+w}{    }\PY{k}{const}\PY{+w}{ }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{velocity}\PY{p}{[}\PY{l+m+mi}{2}\PY{p}{]}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{p}{\PYZob{}}\PY{l+m+mf}{0.0}\PY{p}{,}\PY{+w}{ }\PY{l+m+mf}{0.0}\PY{p}{\PYZcb{}}\PY{p}{;}
+\PY{+w}{    }\PY{k}{return}\PY{+w}{ }\PY{n}{initializeCellSpEnergy}\PY{p}{(}\PY{n}{boundarilizeDensity}\PY{p}{(}\PY{p}{)}\PY{p}{,}\PY{+w}{ }\PY{n}{velocity}\PY{p}{,}
+\PY{+w}{                                  }\PY{n}{boundarilizePressure}\PY{p}{(}\PY{p}{)}\PY{p}{,}\PY{+w}{ }\PY{n}{GAMMA}\PY{p}{)}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+
+\PY{k+kt}{void}\PY{+w}{ }\PY{n+nf}{boundarilizeSpMomentum}\PY{p}{(}\PY{k+kt}{double}\PY{+w}{ }\PY{n}{sp\PYZus{}momentum\PYZus{}cell}\PY{p}{[}\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{)}
+\PY{p}{\PYZob{}}
+\PY{+w}{    }\PY{n}{initializeCellSpMomentum}\PY{p}{(}\PY{n}{sp\PYZus{}momentum\PYZus{}cell}\PY{p}{)}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+
+\PY{k+kt}{void}\PY{+w}{ }\PY{n+nf}{boundarilizeCoor}\PY{p}{(}\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{node\PYZus{}x}\PY{p}{,}\PY{+w}{ }\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{node\PYZus{}y}\PY{p}{,}
+\PY{+w}{                      }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{cell\PYZus{}h\PYZus{}0}\PY{p}{,}\PY{+w}{ }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{cell\PYZus{}h\PYZus{}1}\PY{p}{,}
+\PY{+w}{                      }\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{START\PYZus{}NODE\PYZus{}X}\PY{p}{,}\PY{+w}{ }\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{START\PYZus{}NODE\PYZus{}Y}\PY{p}{,}
+\PY{+w}{                      }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{coor\PYZus{}node}\PY{p}{[}\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{)}
+\PY{p}{\PYZob{}}
+\PY{+w}{    }\PY{n}{initializeNodeCoor}\PY{p}{(}\PY{n}{node\PYZus{}x}\PY{p}{,}\PY{+w}{ }\PY{n}{node\PYZus{}y}\PY{p}{,}\PY{+w}{ }\PY{n}{cell\PYZus{}h\PYZus{}0}\PY{p}{,}\PY{+w}{ }\PY{n}{cell\PYZus{}h\PYZus{}1}\PY{p}{,}
+\PY{+w}{                        }\PY{n}{START\PYZus{}NODE\PYZus{}X}\PY{p}{,}\PY{+w}{ }\PY{n}{START\PYZus{}NODE\PYZus{}Y}\PY{p}{,}\PY{+w}{ }\PY{n}{coor\PYZus{}node}\PY{p}{)}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+
+\PY{k+kt}{void}\PY{+w}{ }\PY{n+nf}{applySedovCellBoundaries}\PY{p}{(}\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{num\PYZus{}cells\PYZus{}x}\PY{p}{,}\PY{+w}{ }\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{num\PYZus{}cells\PYZus{}y}\PY{p}{,}
+\PY{+w}{                              }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{cell\PYZus{}h\PYZus{}0}\PY{p}{,}\PY{+w}{ }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{cell\PYZus{}h\PYZus{}1}\PY{p}{,}\PY{+w}{ }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{GAMMA}\PY{p}{,}
+\PY{+w}{                              }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{mass\PYZus{}cell}\PY{p}{[}\PY{n}{num\PYZus{}cells\PYZus{}y}\PY{+w}{ }\PY{o}{+}\PY{+w}{ }\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{[}\PY{n}{num\PYZus{}cells\PYZus{}x}\PY{+w}{ }\PY{o}{+}\PY{+w}{ }\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{,}
+\PY{+w}{                              }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{density\PYZus{}cell}\PY{p}{[}\PY{n}{num\PYZus{}cells\PYZus{}y}\PY{+w}{ }\PY{o}{+}\PY{+w}{ }\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{[}\PY{n}{num\PYZus{}cells\PYZus{}x}\PY{+w}{ }\PY{o}{+}\PY{+w}{ }\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{,}
+\PY{+w}{                              }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{pressure\PYZus{}cell}\PY{p}{[}\PY{n}{num\PYZus{}cells\PYZus{}y}\PY{+w}{ }\PY{o}{+}\PY{+w}{ }\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{[}\PY{n}{num\PYZus{}cells\PYZus{}x}\PY{+w}{ }\PY{o}{+}\PY{+w}{ }\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{,}
+\PY{+w}{                              }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{volume\PYZus{}cell}\PY{p}{[}\PY{n}{num\PYZus{}cells\PYZus{}y}\PY{+w}{ }\PY{o}{+}\PY{+w}{ }\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{[}\PY{n}{num\PYZus{}cells\PYZus{}x}\PY{+w}{ }\PY{o}{+}\PY{+w}{ }\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{,}
+\PY{+w}{                              }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{sp\PYZus{}energy\PYZus{}cell}\PY{p}{[}\PY{n}{num\PYZus{}cells\PYZus{}y}\PY{+w}{ }\PY{o}{+}\PY{+w}{ }\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{[}\PY{n}{num\PYZus{}cells\PYZus{}x}\PY{+w}{ }\PY{o}{+}\PY{+w}{ }\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{,}
+\PY{+w}{                              }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{sp\PYZus{}momentum\PYZus{}cell}\PY{p}{[}\PY{n}{num\PYZus{}cells\PYZus{}y}\PY{+w}{ }\PY{o}{+}\PY{+w}{ }\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{[}\PY{n}{num\PYZus{}cells\PYZus{}x}\PY{+w}{ }\PY{o}{+}\PY{+w}{ }\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{)}
+\PY{p}{\PYZob{}}
+\PY{+w}{    }\PY{k}{for}\PY{+w}{ }\PY{p}{(}\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{y}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{l+m+mi}{0}\PY{p}{;}\PY{+w}{ }\PY{n}{y}\PY{+w}{ }\PY{o}{\PYZlt{}}\PY{o}{=}\PY{+w}{ }\PY{n}{num\PYZus{}cells\PYZus{}y}\PY{+w}{ }\PY{o}{+}\PY{+w}{ }\PY{l+m+mi}{1}\PY{p}{;}\PY{+w}{ }\PY{o}{+}\PY{o}{+}\PY{n}{y}\PY{p}{)}\PY{+w}{ }\PY{p}{\PYZob{}}
+\PY{+w}{        }\PY{k}{for}\PY{+w}{ }\PY{p}{(}\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{x}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{l+m+mi}{0}\PY{p}{;}\PY{+w}{ }\PY{n}{x}\PY{+w}{ }\PY{o}{\PYZlt{}}\PY{o}{=}\PY{+w}{ }\PY{n}{num\PYZus{}cells\PYZus{}x}\PY{+w}{ }\PY{o}{+}\PY{+w}{ }\PY{l+m+mi}{1}\PY{p}{;}\PY{+w}{ }\PY{o}{+}\PY{o}{+}\PY{n}{x}\PY{p}{)}\PY{+w}{ }\PY{p}{\PYZob{}}
+\PY{+w}{            }\PY{k}{if}\PY{+w}{ }\PY{p}{(}\PY{n}{x}\PY{+w}{ }\PY{o}{\PYZgt{}}\PY{o}{=}\PY{+w}{ }\PY{l+m+mi}{1}\PY{+w}{ }\PY{o}{\PYZam{}}\PY{o}{\PYZam{}}\PY{+w}{ }\PY{n}{x}\PY{+w}{ }\PY{o}{\PYZlt{}}\PY{o}{=}\PY{+w}{ }\PY{n}{num\PYZus{}cells\PYZus{}x}\PY{+w}{ }\PY{o}{\PYZam{}}\PY{o}{\PYZam{}}
+\PY{+w}{                }\PY{n}{y}\PY{+w}{ }\PY{o}{\PYZgt{}}\PY{o}{=}\PY{+w}{ }\PY{l+m+mi}{1}\PY{+w}{ }\PY{o}{\PYZam{}}\PY{o}{\PYZam{}}\PY{+w}{ }\PY{n}{y}\PY{+w}{ }\PY{o}{\PYZlt{}}\PY{o}{=}\PY{+w}{ }\PY{n}{num\PYZus{}cells\PYZus{}y}\PY{p}{)}
+\PY{+w}{                }\PY{k}{continue}\PY{p}{;}
+
+\PY{+w}{            }\PY{k}{if}\PY{+w}{ }\PY{p}{(}\PY{n}{x}\PY{+w}{ }\PY{o}{=}\PY{o}{=}\PY{+w}{ }\PY{n}{num\PYZus{}cells\PYZus{}x}\PY{+w}{ }\PY{o}{+}\PY{+w}{ }\PY{l+m+mi}{1}\PY{+w}{ }\PY{o}{|}\PY{o}{|}\PY{+w}{ }\PY{n}{y}\PY{+w}{ }\PY{o}{=}\PY{o}{=}\PY{+w}{ }\PY{n}{num\PYZus{}cells\PYZus{}y}\PY{+w}{ }\PY{o}{+}\PY{+w}{ }\PY{l+m+mi}{1}\PY{p}{)}\PY{+w}{ }\PY{p}{\PYZob{}}
+\PY{+w}{                }\PY{c+cm}{/* Outer ambient state, including its two mixed corners. */}
+\PY{+w}{                }\PY{n}{mass\PYZus{}cell}\PY{p}{[}\PY{n}{y}\PY{p}{]}\PY{p}{[}\PY{n}{x}\PY{p}{]}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{n}{boundarilizeMass}\PY{p}{(}\PY{n}{cell\PYZus{}h\PYZus{}0}\PY{p}{,}\PY{+w}{ }\PY{n}{cell\PYZus{}h\PYZus{}1}\PY{p}{)}\PY{p}{;}
+\PY{+w}{                }\PY{n}{density\PYZus{}cell}\PY{p}{[}\PY{n}{y}\PY{p}{]}\PY{p}{[}\PY{n}{x}\PY{p}{]}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{n}{boundarilizeDensity}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+\PY{+w}{                }\PY{n}{pressure\PYZus{}cell}\PY{p}{[}\PY{n}{y}\PY{p}{]}\PY{p}{[}\PY{n}{x}\PY{p}{]}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{n}{boundarilizePressure}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+\PY{+w}{                }\PY{n}{volume\PYZus{}cell}\PY{p}{[}\PY{n}{y}\PY{p}{]}\PY{p}{[}\PY{n}{x}\PY{p}{]}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{n}{boundarilizeVolume}\PY{p}{(}\PY{n}{cell\PYZus{}h\PYZus{}0}\PY{p}{,}\PY{+w}{ }\PY{n}{cell\PYZus{}h\PYZus{}1}\PY{p}{)}\PY{p}{;}
+\PY{+w}{                }\PY{n}{sp\PYZus{}energy\PYZus{}cell}\PY{p}{[}\PY{n}{y}\PY{p}{]}\PY{p}{[}\PY{n}{x}\PY{p}{]}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{n}{boundarilizeSpEnergy}\PY{p}{(}\PY{n}{GAMMA}\PY{p}{)}\PY{p}{;}
+\PY{+w}{                }\PY{n}{boundarilizeSpMomentum}\PY{p}{(}\PY{n}{sp\PYZus{}momentum\PYZus{}cell}\PY{p}{[}\PY{n}{y}\PY{p}{]}\PY{p}{[}\PY{n}{x}\PY{p}{]}\PY{p}{)}\PY{p}{;}
+\PY{+w}{            }\PY{p}{\PYZcb{}}\PY{+w}{ }\PY{k}{else}\PY{+w}{ }\PY{p}{\PYZob{}}
+\PY{+w}{                }\PY{c+cm}{/* Even thermodynamic state, odd normal velocity at each axis. */}
+\PY{+w}{                }\PY{k}{const}\PY{+w}{ }\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{source\PYZus{}x}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{n}{x}\PY{+w}{ }\PY{o}{=}\PY{o}{=}\PY{+w}{ }\PY{l+m+mi}{0}\PY{+w}{ }\PY{o}{?}\PY{+w}{ }\PY{l+m+mi}{1}\PY{+w}{ }\PY{o}{:}\PY{+w}{ }\PY{n}{x}\PY{p}{;}
+\PY{+w}{                }\PY{k}{const}\PY{+w}{ }\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{source\PYZus{}y}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{n}{y}\PY{+w}{ }\PY{o}{=}\PY{o}{=}\PY{+w}{ }\PY{l+m+mi}{0}\PY{+w}{ }\PY{o}{?}\PY{+w}{ }\PY{l+m+mi}{1}\PY{+w}{ }\PY{o}{:}\PY{+w}{ }\PY{n}{y}\PY{p}{;}
+\PY{+w}{                }\PY{n}{mass\PYZus{}cell}\PY{p}{[}\PY{n}{y}\PY{p}{]}\PY{p}{[}\PY{n}{x}\PY{p}{]}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{n}{mass\PYZus{}cell}\PY{p}{[}\PY{n}{source\PYZus{}y}\PY{p}{]}\PY{p}{[}\PY{n}{source\PYZus{}x}\PY{p}{]}\PY{p}{;}
+\PY{+w}{                }\PY{n}{density\PYZus{}cell}\PY{p}{[}\PY{n}{y}\PY{p}{]}\PY{p}{[}\PY{n}{x}\PY{p}{]}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{n}{density\PYZus{}cell}\PY{p}{[}\PY{n}{source\PYZus{}y}\PY{p}{]}\PY{p}{[}\PY{n}{source\PYZus{}x}\PY{p}{]}\PY{p}{;}
+\PY{+w}{                }\PY{n}{pressure\PYZus{}cell}\PY{p}{[}\PY{n}{y}\PY{p}{]}\PY{p}{[}\PY{n}{x}\PY{p}{]}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{n}{pressure\PYZus{}cell}\PY{p}{[}\PY{n}{source\PYZus{}y}\PY{p}{]}\PY{p}{[}\PY{n}{source\PYZus{}x}\PY{p}{]}\PY{p}{;}
+\PY{+w}{                }\PY{n}{volume\PYZus{}cell}\PY{p}{[}\PY{n}{y}\PY{p}{]}\PY{p}{[}\PY{n}{x}\PY{p}{]}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{n}{volume\PYZus{}cell}\PY{p}{[}\PY{n}{source\PYZus{}y}\PY{p}{]}\PY{p}{[}\PY{n}{source\PYZus{}x}\PY{p}{]}\PY{p}{;}
+\PY{+w}{                }\PY{n}{sp\PYZus{}energy\PYZus{}cell}\PY{p}{[}\PY{n}{y}\PY{p}{]}\PY{p}{[}\PY{n}{x}\PY{p}{]}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{n}{sp\PYZus{}energy\PYZus{}cell}\PY{p}{[}\PY{n}{source\PYZus{}y}\PY{p}{]}\PY{p}{[}\PY{n}{source\PYZus{}x}\PY{p}{]}\PY{p}{;}
+\PY{+w}{                }\PY{n}{sp\PYZus{}momentum\PYZus{}cell}\PY{p}{[}\PY{n}{y}\PY{p}{]}\PY{p}{[}\PY{n}{x}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{p}{(}\PY{n}{x}\PY{+w}{ }\PY{o}{=}\PY{o}{=}\PY{+w}{ }\PY{l+m+mi}{0}\PY{+w}{ }\PY{o}{?}\PY{+w}{ }\PY{l+m+mf}{\PYZhy{}1.0}\PY{+w}{ }\PY{o}{:}\PY{+w}{ }\PY{l+m+mf}{1.0}\PY{p}{)}
+\PY{+w}{                    }\PY{o}{*}\PY{+w}{ }\PY{n}{sp\PYZus{}momentum\PYZus{}cell}\PY{p}{[}\PY{n}{source\PYZus{}y}\PY{p}{]}\PY{p}{[}\PY{n}{source\PYZus{}x}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{;}
+\PY{+w}{                }\PY{n}{sp\PYZus{}momentum\PYZus{}cell}\PY{p}{[}\PY{n}{y}\PY{p}{]}\PY{p}{[}\PY{n}{x}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{]}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{p}{(}\PY{n}{y}\PY{+w}{ }\PY{o}{=}\PY{o}{=}\PY{+w}{ }\PY{l+m+mi}{0}\PY{+w}{ }\PY{o}{?}\PY{+w}{ }\PY{l+m+mf}{\PYZhy{}1.0}\PY{+w}{ }\PY{o}{:}\PY{+w}{ }\PY{l+m+mf}{1.0}\PY{p}{)}
+\PY{+w}{                    }\PY{o}{*}\PY{+w}{ }\PY{n}{sp\PYZus{}momentum\PYZus{}cell}\PY{p}{[}\PY{n}{source\PYZus{}y}\PY{p}{]}\PY{p}{[}\PY{n}{source\PYZus{}x}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{]}\PY{p}{;}
+\PY{+w}{            }\PY{p}{\PYZcb{}}
+\PY{+w}{        }\PY{p}{\PYZcb{}}
+\PY{+w}{    }\PY{p}{\PYZcb{}}
+\PY{p}{\PYZcb{}}
+
+
+\PY{k+kt}{void}\PY{+w}{ }\PY{n+nf}{applySedovNodeBoundaries}\PY{p}{(}\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{num\PYZus{}cells\PYZus{}x}\PY{p}{,}\PY{+w}{ }\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{num\PYZus{}cells\PYZus{}y}\PY{p}{,}
+\PY{+w}{                              }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{coor\PYZus{}node}\PY{p}{[}\PY{n}{num\PYZus{}cells\PYZus{}y}\PY{+w}{ }\PY{o}{+}\PY{+w}{ }\PY{l+m+mi}{3}\PY{p}{]}\PY{p}{[}\PY{n}{num\PYZus{}cells\PYZus{}x}\PY{+w}{ }\PY{o}{+}\PY{+w}{ }\PY{l+m+mi}{3}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{)}
+\PY{p}{\PYZob{}}
+\PY{+w}{    }\PY{k}{const}\PY{+w}{ }\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{right}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{n}{num\PYZus{}cells\PYZus{}x}\PY{+w}{ }\PY{o}{+}\PY{+w}{ }\PY{l+m+mi}{1}\PY{p}{;}
+\PY{+w}{    }\PY{k}{const}\PY{+w}{ }\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{top}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{n}{num\PYZus{}cells\PYZus{}y}\PY{+w}{ }\PY{o}{+}\PY{+w}{ }\PY{l+m+mi}{1}\PY{p}{;}
+
+\PY{+w}{    }\PY{k}{for}\PY{+w}{ }\PY{p}{(}\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{y}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{l+m+mi}{1}\PY{p}{;}\PY{+w}{ }\PY{n}{y}\PY{+w}{ }\PY{o}{\PYZlt{}}\PY{o}{=}\PY{+w}{ }\PY{n}{top}\PY{p}{;}\PY{+w}{ }\PY{o}{+}\PY{o}{+}\PY{n}{y}\PY{p}{)}\PY{+w}{ }\PY{p}{\PYZob{}}
+\PY{+w}{        }\PY{c+cm}{/* Reflect the current left interior node, preserving tangential motion. */}
+\PY{+w}{        }\PY{n}{coor\PYZus{}node}\PY{p}{[}\PY{n}{y}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{o}{\PYZhy{}}\PY{n}{coor\PYZus{}node}\PY{p}{[}\PY{n}{y}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{;}
+\PY{+w}{        }\PY{n}{coor\PYZus{}node}\PY{p}{[}\PY{n}{y}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{]}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{n}{coor\PYZus{}node}\PY{p}{[}\PY{n}{y}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{]}\PY{p}{;}
+
+\PY{+w}{        }\PY{k}{for}\PY{+w}{ }\PY{p}{(}\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{component}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{l+m+mi}{0}\PY{p}{;}\PY{+w}{ }\PY{n}{component}\PY{+w}{ }\PY{o}{\PYZlt{}}\PY{+w}{ }\PY{l+m+mi}{2}\PY{p}{;}\PY{+w}{ }\PY{o}{+}\PY{o}{+}\PY{n}{component}\PY{p}{)}\PY{+w}{ }\PY{p}{\PYZob{}}
+\PY{+w}{            }\PY{n}{coor\PYZus{}node}\PY{p}{[}\PY{n}{y}\PY{p}{]}\PY{p}{[}\PY{n}{right}\PY{+w}{ }\PY{o}{+}\PY{+w}{ }\PY{l+m+mi}{1}\PY{p}{]}\PY{p}{[}\PY{n}{component}\PY{p}{]}\PY{+w}{ }\PY{o}{=}
+\PY{+w}{                }\PY{l+m+mf}{2.0}\PY{+w}{ }\PY{o}{*}\PY{+w}{ }\PY{n}{coor\PYZus{}node}\PY{p}{[}\PY{n}{y}\PY{p}{]}\PY{p}{[}\PY{n}{right}\PY{p}{]}\PY{p}{[}\PY{n}{component}\PY{p}{]}
+\PY{+w}{                }\PY{o}{\PYZhy{}}\PY{+w}{ }\PY{n}{coor\PYZus{}node}\PY{p}{[}\PY{n}{y}\PY{p}{]}\PY{p}{[}\PY{n}{right}\PY{+w}{ }\PY{o}{\PYZhy{}}\PY{+w}{ }\PY{l+m+mi}{1}\PY{p}{]}\PY{p}{[}\PY{n}{component}\PY{p}{]}\PY{p}{;}
+\PY{+w}{        }\PY{p}{\PYZcb{}}
+\PY{+w}{    }\PY{p}{\PYZcb{}}
+
+\PY{+w}{    }\PY{c+cm}{/* Include the new side ghosts so corner operations compose consistently. */}
+\PY{+w}{    }\PY{k}{for}\PY{+w}{ }\PY{p}{(}\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{x}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{l+m+mi}{0}\PY{p}{;}\PY{+w}{ }\PY{n}{x}\PY{+w}{ }\PY{o}{\PYZlt{}}\PY{o}{=}\PY{+w}{ }\PY{n}{right}\PY{+w}{ }\PY{o}{+}\PY{+w}{ }\PY{l+m+mi}{1}\PY{p}{;}\PY{+w}{ }\PY{o}{+}\PY{o}{+}\PY{n}{x}\PY{p}{)}\PY{+w}{ }\PY{p}{\PYZob{}}
+\PY{+w}{        }\PY{n}{coor\PYZus{}node}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{[}\PY{n}{x}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{n}{coor\PYZus{}node}\PY{p}{[}\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{[}\PY{n}{x}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{;}
+\PY{+w}{        }\PY{n}{coor\PYZus{}node}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{[}\PY{n}{x}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{]}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{o}{\PYZhy{}}\PY{n}{coor\PYZus{}node}\PY{p}{[}\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{[}\PY{n}{x}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{]}\PY{p}{;}
+
+\PY{+w}{        }\PY{k}{for}\PY{+w}{ }\PY{p}{(}\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{component}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{l+m+mi}{0}\PY{p}{;}\PY{+w}{ }\PY{n}{component}\PY{+w}{ }\PY{o}{\PYZlt{}}\PY{+w}{ }\PY{l+m+mi}{2}\PY{p}{;}\PY{+w}{ }\PY{o}{+}\PY{o}{+}\PY{n}{component}\PY{p}{)}\PY{+w}{ }\PY{p}{\PYZob{}}
+\PY{+w}{            }\PY{n}{coor\PYZus{}node}\PY{p}{[}\PY{n}{top}\PY{+w}{ }\PY{o}{+}\PY{+w}{ }\PY{l+m+mi}{1}\PY{p}{]}\PY{p}{[}\PY{n}{x}\PY{p}{]}\PY{p}{[}\PY{n}{component}\PY{p}{]}\PY{+w}{ }\PY{o}{=}
+\PY{+w}{                }\PY{l+m+mf}{2.0}\PY{+w}{ }\PY{o}{*}\PY{+w}{ }\PY{n}{coor\PYZus{}node}\PY{p}{[}\PY{n}{top}\PY{p}{]}\PY{p}{[}\PY{n}{x}\PY{p}{]}\PY{p}{[}\PY{n}{component}\PY{p}{]}
+\PY{+w}{                }\PY{o}{\PYZhy{}}\PY{+w}{ }\PY{n}{coor\PYZus{}node}\PY{p}{[}\PY{n}{top}\PY{+w}{ }\PY{o}{\PYZhy{}}\PY{+w}{ }\PY{l+m+mi}{1}\PY{p}{]}\PY{p}{[}\PY{n}{x}\PY{p}{]}\PY{p}{[}\PY{n}{component}\PY{p}{]}\PY{p}{;}
+\PY{+w}{        }\PY{p}{\PYZcb{}}
+\PY{+w}{    }\PY{p}{\PYZcb{}}
+\PY{p}{\PYZcb{}}
+
+
+\PY{k+kt}{void}\PY{+w}{ }\PY{n+nf}{applySedovVelocityBoundary}\PY{p}{(}\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{node\PYZus{}x}\PY{p}{,}\PY{+w}{ }\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{node\PYZus{}y}\PY{p}{,}
+\PY{+w}{                                }\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{START\PYZus{}NODE\PYZus{}X}\PY{p}{,}\PY{+w}{ }\PY{k+kt}{size\PYZus{}t}\PY{+w}{ }\PY{n}{START\PYZus{}NODE\PYZus{}Y}\PY{p}{,}
+\PY{+w}{                                }\PY{k+kt}{double}\PY{+w}{ }\PY{n}{velocity\PYZus{}node}\PY{p}{[}\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{)}
+\PY{p}{\PYZob{}}
+\PY{+w}{    }\PY{k}{if}\PY{+w}{ }\PY{p}{(}\PY{n}{node\PYZus{}x}\PY{+w}{ }\PY{o}{=}\PY{o}{=}\PY{+w}{ }\PY{n}{START\PYZus{}NODE\PYZus{}X}\PY{p}{)}
+\PY{+w}{        }\PY{n}{velocity\PYZus{}node}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{l+m+mf}{0.0}\PY{p}{;}
+\PY{+w}{    }\PY{k}{if}\PY{+w}{ }\PY{p}{(}\PY{n}{node\PYZus{}y}\PY{+w}{ }\PY{o}{=}\PY{o}{=}\PY{+w}{ }\PY{n}{START\PYZus{}NODE\PYZus{}Y}\PY{p}{)}
+\PY{+w}{        }\PY{n}{velocity\PYZus{}node}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{]}\PY{+w}{ }\PY{o}{=}\PY{+w}{ }\PY{l+m+mf}{0.0}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+\end{Verbatim}
+
+\end{document}

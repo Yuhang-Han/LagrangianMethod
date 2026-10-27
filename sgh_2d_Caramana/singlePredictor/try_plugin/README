@@ -1,0 +1,80 @@
+20260916
+这个目录下是使用插件式动态库管理不同算例与测试条件(初边值条件等)的一些尝试
+
+## 动机
+
+无论是为了测试程序的正确性, 还是为了评估算法的实际效果, 
+都需要使用统一份程序跑很多例子.
+这些例子不仅是一些参数, 更多的是函数形式.
+
+最初等的方法是同一份代码复制几份, 分别更改.
+但这样一方面很唐, 另一方面如果发现问题需要修改代码主体, 
+则需要重复修改多份副本.
+
+所以一个基本的想法是将求解器主体与条件分离. 
+如此, 面对不同算例, 仅是求解器调用不同的条件.
+进一步我还不想反复编译求解器, 甚至在专注于算例时不想动求解器代码, 
+所以自然考虑动态库.
+
+
+## 整体思路
+
+将初边值写成动态库 `condition_case1.c` -> `condition_case1.so`.
+
+求解器 `solver.c` 读取动态库中的函数用来施加初变值条件.
+
+两者沟通的数据格式协议写在 `conditions_api.h` 中.
+
+
+## 关键实现: dynamic linking
+
+这个想法需要指挥一个已经编译好的程序在运行时去调用另一个已经编译好的库.
+还不单单是动态库. 
+尽管我觉得也可以用动态库包装一层, 视情况指向不同的实现, 但这样确实更整洁.
+
+打开动态库并加载其机器码
+
+``
+void *handle = dlopen("case1.so", RTLD_NOW);
+``
+
+从动态库中获取某个 symbol 的地址
+
+``
+dlsym(handle, "get_conditions");
+``
+
+
+## 目录结构
+
+conditions_api.h
+    public interface shared by solver and plugins
+
+conditions_api.c
+    dynamic loading machinery
+    dlopen / dlsym / dlclose
+    ABI version checking
+
+solver.c
+    actual CFD solver
+
+case1.c
+    IC / BC for case 1
+
+case2.c
+    IC / BC for case 2
+
+
+## 编译
+
+gcc -c conditions_api.c
+gcc -c solver.c
+
+gcc solver.o conditions_api.o -ldl -o solver
+
+gcc -shared -fPIC case1.c -o case1.so
+gcc -shared -fPIC case2.c -o case2.so
+
+
+## 运行
+./solver ./case1.so

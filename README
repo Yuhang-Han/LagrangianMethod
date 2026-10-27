@@ -1,4 +1,27 @@
-20260828 韩宇航
+20261027
+
+这几个月逐渐完成了一维和二维交错及中心型拉氏格式的学习和代码编写.
+参考文献如下
+
+一维交错拉氏格式:
+J. von Neumann, and R. D. Richtmyer. A method for the numerical calculation of hydrodynamic shocks. 
+Journal of Applied Physics, 21(3), 232–237 (1950). 
+https://doi.org/10.1063/1.1699639
+
+二维交错拉氏格式:
+E. J. Caramana, D. E. Burton, M. J. Shashkov, and P. P. Whalen.
+The construction of compatible hydrodynamics algorithms utilizing conservation of total energy
+Journal of Computional Physics, 146, 227–262 (1998).
+https://doi.org/10.1006/jcph.1998.6029
+
+一维及二维单元中心型拉氏格式:
+P.-H. Maire. Contribution à la modélisation numérique de la fusion par confinement inertiel 
+[Habilitation à diriger des recherches, Université Bordeaux I]. HAL (2011). 
+https://hal.science/tel-00589758
+
+
+
+20260828
 
 本仓库为流体力学方程拉格朗日格式的代码
 初步计划分别编写交错型拉氏格式和中心型拉氏格式, 并进行对比

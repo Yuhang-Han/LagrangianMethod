@@ -1,0 +1,148 @@
+# 一维单元中心型Lagrange 格式
+
+20260901
+
+本目录下为实现一维单元中心型Lagrange 格式的代码, 参考文献为 Maire, HDR.
+
+## 连续方程
+
+考虑一维气体Lagrange 方程
+$$
+\rho_0 \frac{\mathrm d }{\mathrm d t}\frac1\rho - \frac{\partial}{\partial X}u = 0, \\
+\rho_0 \frac{\mathrm d }{\mathrm d t}u + \frac{\partial}{\partial X}P = 0, \\
+\rho_0 \frac{\mathrm d }{\mathrm d t}E + \frac{\partial}{\partial X}(Pu) = 0,
+$$
+理想气体状态方程
+$$
+P=(\gamma -1)\rho e, \quad e = E-\frac12 u^2,
+$$
+其中$X$ 为Lagrange 标签.
+
+## 数值格式
+
+将求解区域剖分$N$ 个单元(cell), 设第$i$ 个单元上的质量平均物理量为$m_i, \rho_i, u_i, P_i, E_i$, 即物理量$q$ 的质量平均为
+$$
+q_i:=\frac 1 {m_i} \int_{x_{i-1/2}}^{x_{i+1/2}}q \,\mathrm d m = \frac 1 {m_i} \int_{x_{i-1/2}}^{x_{i+1/2}}\rho \, q \,\mathrm d X.
+$$
+则有单元上的差分方程
+$$
+m_i \frac{\mathrm d}{\mathrm d t}(\frac1{\rho_i})- (u_{i+1/2}-u_{i-1/2}) = 0,\\
+m_i \frac{\mathrm d}{\mathrm d t}u_i + P_{i+1/2}-P_{i-1/2} = 0,\\
+m_i \frac{\mathrm d}{\mathrm d t}E_i + (Pu)_{i+1/2}-(Pu)_{i-1/2} = 0,\\
+$$
+其中半节点表示界面通量, 使用Riemann 求解器确定, 这里采用声学逼近求解器
+$$
+u^* = \frac{u_L + u_R}2 - \frac{P_R-P_L}2,\\
+P^* = \frac{P_L+P_R}2 - \frac{\rho a}2(u_R-u_L),
+$$
+其中声速$a = \sqrt{\gamma P/\rho}$.
+
+假设相容性$(Pu)_i = P_i u_i$, 使用向前Euler 离散空间导数可以得到全离散格式
+$$
+m_i(V_i^{n+1}-V_i^n) - \tau(u_{i+1/2}^n-u_{i-1/2}^n) = 0,\\
+m_i(u_i^{n+1} - u_i^n) + \tau(P_{i+1/2}^n-P_{i-1/2}^n) = 0,\\
+m_i(E_i^{n+1}-E_{i}^n) + \tau(P_{i+1/2}^n u_{i+1/2}^n - P_{i-1/2}^n u_{i-1/2}^n) = 0,\\
+$$
+其中$V_i^n = 1/\rho_i^n$ 为比容.
+
+综上得到显式推进格式
+$$
+V_i^{n+1}= V_i^n + \frac\tau{m_i}\left(u_{i+\frac12}^n-u_{i-\frac12}^n\right),\\
+
+u_i^{n+1}= u_i^n-\frac\tau{m_i}\left(P_{i+\frac12}^n-P_{i-\frac12}^n\right),\\
+
+E_i^{n+1}= E_i^n-\frac\tau{m_i}\left(P_{i+\frac12}^n u_{i+\frac12}^n-P_{i-\frac12}^n u_{i-\frac12}^n\right).
+\tag 1
+$$
+
+$$
+u_{i+1/2} = \frac{z_iu_i + z_{i+1}u_{i+1}}{z_i + z_{i+1}} 
+- \frac{P_{i+1}-P_i}{z_i + z_{i+1}},\\
+P_{i+1/2} = \frac{z_i P_i + z_{i+1} P_{i+1}}{z_i + z_{i+1}}  
+- \frac{z_i  z_{i+1}}{z_i + z_{i+1}}(u_{i+1}-u_i),\\
+z_i= a_i/V_i, \quad a = \sqrt{\gamma p V}.
+\tag 2
+$$
+
+$$
+E=\frac12 u^2 + \frac {PV} {(\gamma-1)}, \quad P=(\gamma -1)( E-\frac12 u^2)/V.
+\tag 3
+$$
+
+CFL 条件
+$$
+\tau = \mathrm{CFL} \cdot \frac {\Delta x}{|u| + a}.
+\tag 4
+$$
+
+### 程序实现
+
+1. 网格参数: 输入时空网格剖分数$M, N$, 空间终点$X$, 时间终点$T$. 则时间网格步长$\tau = 1/M$, 空间网格步长$h=1/N$.
+
+2. 初始化: 定义长(N+2) 的数组: 
+   Vn, un, Pn, En 分别用于存储$V_i^n, u_i^n,P_i^n, E_i^n$ 的值; 
+   V, u, P, E 用于存储下一时刻的值;
+   m 用于存储各单元质量.
+
+   长(N+1) 的数组: un_half, Pn_half 用于存储界面值$P_{i+1/2}^n, u_{i+1/2}^n$;
+
+   将初值条件填入pn, En, un, Vn, m. 另外定义数组xEuler 用于存储质点位置. $n=0$.
+
+3. 时间推进:  根据CFL 数(4) 确定时间步长$\tau^n$.
+   假设$t=t^n$ 时刻的$V_i^n, u_i^n,P_i^n, E_i^n$ 已知, $i=0,\dots,N+1$
+   由(2) 计算界面状态$P_{i+1/2}^n, u_{i+1/2}^n$, $i=0,\dots,N$. 
+
+   用界面速度更新质点位置.
+   使用(1) 推进一步时间, 并使用(3), 利用边界条件补齐两端虚拟单元($i=0,N+1$)的状态, 得到$V_i^{n+1}, u_i^{n+1},P_i^{n+1}, E_i^{n+1}$.
+
+4. 时间更新: $t \leftarrow t+\tau^n,n\leftarrow n+1$. 若$t=T$, 结束; 否则回到step 3.
+
+### 数值算例
+
+Sod 激波管, 初值
+$$
+(\rho, u, p)_L = (1,0,1),\\
+(\rho, u, p)_R = (0.125,0,0.1),
+$$
+$T=0.1$ 边界使用自由流边界. 空间剖分1000份, CFL=0.3, 结果如下图
+
+![Density](figures/density.png)
+
+![Velocity](figures/velocity.png)
+
+![Pressure](figures/pressure.png)
+
+
+
+纯右行声波
+$$
+\rho(x,0) = 1+\epsilon \sin (\pi x), \\
+u(x,0) = \sqrt{\gamma} \epsilon \sin(2\pi x),\\
+p(x,0) = 1+ \gamma \epsilon \sin(2\pi x).
+$$
+其中$\epsilon =0.5$.
+
+
+
+这个程序使用CFL 数自动确定时间步长, 收敛阶不太好测; 测的时候还是要固定步长, 更何况这个声波算例好像也没有激波.
+
+固定时间步长1E-4, 测得结果如下
+
+| N    | L1       | Order | L2       | Order | Linf     | Order |
+| ---- | -------- | ----- | -------- | ----- | -------- | ----- |
+| 20   | 4.226e-2 |       | 5.255e-2 |       | 9.599e-2 |       |
+| 40   | 2.239e-2 | 0.916 | 2.839e-2 | 0.888 | 5.296e-2 | 0.858 |
+| 80   | 1.144e-2 | 0.969 | 1.468e-2 | 0.952 | 2.780e-2 | 0.930 |
+| 160  | 5.717e-3 | 1.000 | 7.375e-3 | 0.993 | 1.409e-2 | 0.980 |
+| 320  | 2.788e-3 | 1.036 | 3.607e-3 | 1.032 | 6.928e-3 | 1.025 |
+| 640  | 1.306e-3 | 1.094 | 1.692e-3 | 1.092 | 3.259e-3 | 1.088 |
+
+可以看到程序达到了预期的一阶精度.
+
+### 絮语
+
+我觉得明确迭代变量的名字和范围是个好习惯.
+
+以这个程序为例, 需要遍历物理单元, 全部单元(含虚拟单元), 界面. 每组对象的编号范围是确定的, 比如实现明确好iCell = [1,N+1), iGhost = [0, N+2), iFace = [0, N+1). 然后统一使用, 就可以免去很多读写越界的麻烦.
+
+另外, 我一直不太注意格式的CFL 数, 但很多时候出现负压强的原因就是CFL 数太大, 比如这个格式0.5 就会有负压强, 而0.3 正常.
